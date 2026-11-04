@@ -1,4 +1,4 @@
-# CheatChord desktop: builds VST3 (+ AU, Standalone) for Windows, macOS and Linux, tests them, and uploads ready zips.
+# CheatChord desktop: builds VST3 (+ VST2, AU, Standalone) for Windows, macOS and Linux, tests them, and uploads ready zips.
 name: Build CheatChord
 
 on:
@@ -41,7 +41,7 @@ jobs:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
-      - name: Configure (Universal: Apple Silicon + Intel)
+      - name: "Configure (Universal - Apple Silicon + Intel)"
         run: cmake -S . -B build -G Xcode -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCC_VST2=ON
       - name: Build
         run: cmake --build build --config Release --parallel 4

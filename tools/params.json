@@ -1,0 +1,3471 @@
+{
+  "name": "CheatChord",
+  "params": [
+    {
+      "key": "level",
+      "name": "Synth Level",
+      "min": 0,
+      "max": 100,
+      "default": 75,
+      "display": "int",
+      "unit": "%"
+    },
+    {
+      "key": "key",
+      "name": "Key",
+      "options": [
+        "C",
+        "Db",
+        "D",
+        "Eb",
+        "E",
+        "F",
+        "F#",
+        "G",
+        "Ab",
+        "A",
+        "Bb",
+        "B"
+      ],
+      "default": 0,
+      "qlink_ticks": 4
+    },
+    {
+      "key": "scale",
+      "name": "Scale",
+      "options": [
+        "Major",
+        "Minor",
+        "Dorian",
+        "Mixolydian",
+        "Lydian",
+        "Phrygian",
+        "Harm. Minor",
+        "Mel. Minor"
+      ],
+      "default": 0,
+      "qlink_ticks": 4
+    },
+    {
+      "key": "style",
+      "name": "Style",
+      "options": [
+        "Pop",
+        "60s Brit Pop",
+        "70s Soul",
+        "80s Pop Funk",
+        "Neo Soul",
+        "Gospel",
+        "Jazz",
+        "90s R&B",
+        "House",
+        "Lo-Fi",
+        "Cinematic",
+        "Rock",
+        "Trap",
+        "Boom Bap",
+        "Drill",
+        "Afrobeats",
+        "Amapiano",
+        "Reggaeton",
+        "Bossa Nova",
+        "Salsa / Son",
+        "Blues",
+        "Country",
+        "Disco",
+        "Synthwave",
+        "Ambient",
+        "Classical",
+        "Romantic",
+        "EDM",
+        "Future Bass",
+        "UK Garage",
+        "City Pop",
+        "K-Pop",
+        "Flamenco",
+        "Reggae",
+        "Motown",
+        "Metal"
+      ],
+      "default": 0,
+      "qlink_ticks": 4
+    },
+    {
+      "key": "spice",
+      "name": "Spice",
+      "min": 0,
+      "max": 100,
+      "default": 35,
+      "display": "int",
+      "unit": "%"
+    },
+    {
+      "key": "sug_1",
+      "name": "Idea 1",
+      "display": "string"
+    },
+    {
+      "key": "sug_2",
+      "name": "Idea 2",
+      "display": "string"
+    },
+    {
+      "key": "sug_3",
+      "name": "Idea 3",
+      "display": "string"
+    },
+    {
+      "key": "sug_4",
+      "name": "Idea 4",
+      "display": "string"
+    },
+    {
+      "key": "sug_5",
+      "name": "Idea 5",
+      "display": "string"
+    },
+    {
+      "key": "sug_6",
+      "name": "Idea 6",
+      "display": "string"
+    },
+    {
+      "key": "sug_7",
+      "name": "Idea 7",
+      "display": "string"
+    },
+    {
+      "key": "sug_8",
+      "name": "Idea 8",
+      "display": "string"
+    },
+    {
+      "key": "prog_1",
+      "name": "Chord 1",
+      "display": "string"
+    },
+    {
+      "key": "prog_2",
+      "name": "Chord 2",
+      "display": "string"
+    },
+    {
+      "key": "prog_3",
+      "name": "Chord 3",
+      "display": "string"
+    },
+    {
+      "key": "prog_4",
+      "name": "Chord 4",
+      "display": "string"
+    },
+    {
+      "key": "prog_5",
+      "name": "Chord 5",
+      "display": "string"
+    },
+    {
+      "key": "prog_6",
+      "name": "Chord 6",
+      "display": "string"
+    },
+    {
+      "key": "prog_7",
+      "name": "Chord 7",
+      "display": "string"
+    },
+    {
+      "key": "prog_8",
+      "name": "Chord 8",
+      "display": "string"
+    },
+    {
+      "key": "tint_1",
+      "name": "Tint 1",
+      "min": 0,
+      "max": 5,
+      "default": 4,
+      "display": "int",
+      "live": true
+    },
+    {
+      "key": "tint_2",
+      "name": "Tint 2",
+      "min": 0,
+      "max": 5,
+      "default": 4,
+      "display": "int",
+      "live": true
+    },
+    {
+      "key": "tint_3",
+      "name": "Tint 3",
+      "min": 0,
+      "max": 5,
+      "default": 4,
+      "display": "int",
+      "live": true
+    },
+    {
+      "key": "tint_4",
+      "name": "Tint 4",
+      "min": 0,
+      "max": 5,
+      "default": 4,
+      "display": "int",
+      "live": true
+    },
+    {
+      "key": "tint_5",
+      "name": "Tint 5",
+      "min": 0,
+      "max": 5,
+      "default": 4,
+      "display": "int",
+      "live": true
+    },
+    {
+      "key": "tint_6",
+      "name": "Tint 6",
+      "min": 0,
+      "max": 5,
+      "default": 4,
+      "display": "int",
+      "live": true
+    },
+    {
+      "key": "tint_7",
+      "name": "Tint 7",
+      "min": 0,
+      "max": 5,
+      "default": 4,
+      "display": "int",
+      "live": true
+    },
+    {
+      "key": "tint_8",
+      "name": "Tint 8",
+      "min": 0,
+      "max": 5,
+      "default": 4,
+      "display": "int",
+      "live": true
+    },
+    {
+      "key": "add",
+      "name": "Add",
+      "min": 0,
+      "max": 1,
+      "momentary": true
+    },
+    {
+      "key": "reroll",
+      "name": "Reroll",
+      "min": 0,
+      "max": 1,
+      "momentary": true
+    },
+    {
+      "key": "generate",
+      "name": "Generate",
+      "min": 0,
+      "max": 1,
+      "momentary": true
+    },
+    {
+      "key": "delete",
+      "name": "Delete",
+      "min": 0,
+      "max": 1,
+      "momentary": true
+    },
+    {
+      "key": "clear",
+      "name": "Clear",
+      "min": 0,
+      "max": 1,
+      "momentary": true
+    },
+    {
+      "key": "gen_len",
+      "name": "Loop Length",
+      "options": [
+        "4 Chords",
+        "8 Chords"
+      ],
+      "default": 0
+    },
+    {
+      "key": "status",
+      "name": "Status",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "follow",
+      "name": "Play With MPC",
+      "options": [
+        "Off",
+        "On"
+      ],
+      "default": 1
+    },
+    {
+      "key": "bars",
+      "name": "Chord Length",
+      "options": [
+        "1/64T",
+        "1/64",
+        "1/32T",
+        "1/32",
+        "1/16T",
+        "1/16",
+        "1/8T",
+        "1/8",
+        "1/4T",
+        "1/4",
+        "1/2T",
+        "1/2 Bar",
+        "1 Bar",
+        "2 Bars",
+        "4 Bars",
+        "8 Bars",
+        "16 Bars"
+      ],
+      "default": 12,
+      "qlink_ticks": 3
+    },
+    {
+      "key": "rhythm",
+      "name": "Rhythm",
+      "options": [
+        "Sustain",
+        "Whole Notes",
+        "Half Notes",
+        "Quarters",
+        "Eighths",
+        "Offbeats",
+        "Charleston",
+        "Tresillo",
+        "Funk 16ths",
+        "Garage",
+        "Neo Soul Lazy",
+        "Arp Up",
+        "Arp Down",
+        "Arp Up/Down",
+        "Arp Random",
+        "Broken Chord",
+        "Boom Bap Stab",
+        "Trap Pad",
+        "Drill Slide",
+        "Dembow",
+        "Afrobeats",
+        "Amapiano",
+        "Deep House",
+        "2-Step",
+        "Disco Chops",
+        "Funk Hits",
+        "Gospel Shout",
+        "Bossa Comp",
+        "Samba",
+        "Salsa Montuno",
+        "Son Clave",
+        "Reggae One Drop",
+        "Ska Upstroke",
+        "Dancehall",
+        "Motown Beat",
+        "Doo-Wop 12/8",
+        "Blues Shuffle",
+        "Country Boom",
+        "Rock Drive",
+        "Pop Ballad",
+        "Synthwave 16",
+        "EDM Pump",
+        "Future Chops",
+        "Trance Gate",
+        "Lo-Fi Late",
+        "Habanera",
+        "Jersey Club",
+        "Trap Triplets",
+        "Afro House"
+      ],
+      "default": 0,
+      "qlink_ticks": 3
+    },
+    {
+      "key": "rate",
+      "name": "Arp Rate",
+      "options": [
+        "1/64T",
+        "1/64",
+        "1/32T",
+        "1/32",
+        "1/16T",
+        "1/16",
+        "1/8T",
+        "1/8",
+        "1/4T",
+        "1/4",
+        "1/2T",
+        "1/2 Bar",
+        "1 Bar",
+        "2 Bars",
+        "4 Bars",
+        "8 Bars",
+        "16 Bars"
+      ],
+      "default": 5,
+      "qlink_ticks": 3
+    },
+    {
+      "key": "direction",
+      "name": "Direction",
+      "options": [
+        "Forward",
+        "Reverse",
+        "Ping-Pong",
+        "Random"
+      ],
+      "default": 0,
+      "qlink_ticks": 4
+    },
+    {
+      "key": "push",
+      "name": "Push",
+      "options": [
+        "Off",
+        "On"
+      ],
+      "default": 0
+    },
+    {
+      "key": "strum",
+      "name": "Strum",
+      "min": 0,
+      "max": 100,
+      "default": 0,
+      "display": "int",
+      "unit": "ms"
+    },
+    {
+      "key": "swing",
+      "name": "Swing",
+      "min": 50,
+      "max": 75,
+      "default": 50,
+      "display": "int",
+      "unit": "%"
+    },
+    {
+      "key": "gate",
+      "name": "Gate",
+      "min": 10,
+      "max": 100,
+      "default": 92,
+      "display": "int",
+      "unit": "%"
+    },
+    {
+      "key": "velocity",
+      "name": "Velocity",
+      "min": 1,
+      "max": 127,
+      "default": 100,
+      "display": "int"
+    },
+    {
+      "key": "humanize",
+      "name": "Humanize",
+      "min": 0,
+      "max": 100,
+      "default": 10,
+      "display": "int",
+      "unit": "%"
+    },
+    {
+      "key": "mute",
+      "name": "Mute",
+      "options": [
+        "Off",
+        "On"
+      ],
+      "default": 0
+    },
+    {
+      "key": "voicing",
+      "name": "Voicing",
+      "options": [
+        "Close",
+        "Open",
+        "Drop 2",
+        "Spread",
+        "Neo Soul",
+        "Shell"
+      ],
+      "default": 0,
+      "qlink_ticks": 4
+    },
+    {
+      "key": "lead",
+      "name": "Voice Leading",
+      "options": [
+        "Off",
+        "On"
+      ],
+      "default": 1
+    },
+    {
+      "key": "octave",
+      "name": "Octave",
+      "options": [
+        "-2",
+        "-1",
+        "0",
+        "+1",
+        "+2"
+      ],
+      "default": 2,
+      "qlink_ticks": 4
+    },
+    {
+      "key": "bass",
+      "name": "Bass Note",
+      "options": [
+        "Off",
+        "On"
+      ],
+      "default": 1
+    },
+    {
+      "key": "arp_oct",
+      "name": "Arp Octaves",
+      "options": [
+        "1 Oct",
+        "2 Oct",
+        "3 Oct"
+      ],
+      "default": 0
+    },
+    {
+      "key": "cursor",
+      "name": "Edit Slot",
+      "min": 1,
+      "max": 8,
+      "default": 1,
+      "display": "int"
+    },
+    {
+      "key": "slot_root",
+      "name": "Root",
+      "options": [
+        "C",
+        "C#/Db",
+        "D",
+        "D#/Eb",
+        "E",
+        "F",
+        "F#/Gb",
+        "G",
+        "G#/Ab",
+        "A",
+        "A#/Bb",
+        "B"
+      ],
+      "default": 0,
+      "qlink_ticks": 4
+    },
+    {
+      "key": "slot_type",
+      "name": "Chord Type",
+      "options": [
+        "maj",
+        "m",
+        "dim",
+        "aug",
+        "sus2",
+        "sus4",
+        "6",
+        "m6",
+        "maj7",
+        "7",
+        "m7",
+        "m7b5",
+        "dim7",
+        "m(maj7)",
+        "7sus4",
+        "add9",
+        "madd9",
+        "6/9",
+        "maj9",
+        "9",
+        "m9",
+        "m11",
+        "9sus4",
+        "13",
+        "maj7#11",
+        "7b9",
+        "7#9",
+        "7#5",
+        "maj13",
+        "13sus4"
+      ],
+      "default": 0,
+      "qlink_ticks": 3
+    },
+    {
+      "key": "slot_bass",
+      "name": "Bass",
+      "options": [
+        "Root",
+        "/C",
+        "/C#/Db",
+        "/D",
+        "/D#/Eb",
+        "/E",
+        "/F",
+        "/F#/Gb",
+        "/G",
+        "/G#/Ab",
+        "/A",
+        "/A#/Bb",
+        "/B"
+      ],
+      "default": 0,
+      "qlink_ticks": 4
+    },
+    {
+      "key": "slot_var",
+      "name": "Variation",
+      "options": [
+        "Smoothest",
+        "Alt 1",
+        "Alt 2",
+        "Alt 3"
+      ],
+      "default": 0
+    },
+    {
+      "key": "slot_len",
+      "name": "Slot Length",
+      "options": [
+        "Half",
+        "Normal",
+        "Double"
+      ],
+      "default": 1
+    },
+    {
+      "key": "sound",
+      "name": "Sound",
+      "options": [
+        "E-Piano",
+        "Soft Pad",
+        "Organ",
+        "Synth Keys",
+        "Strings",
+        "Bell Keys"
+      ],
+      "default": 0,
+      "qlink_ticks": 4
+    },
+    {
+      "key": "tone",
+      "name": "Tone",
+      "min": 0,
+      "max": 100,
+      "default": 50,
+      "display": "int",
+      "unit": "%"
+    },
+    {
+      "key": "release",
+      "name": "Release",
+      "min": 0,
+      "max": 100,
+      "default": 35,
+      "display": "int",
+      "unit": "%"
+    },
+    {
+      "key": "space",
+      "name": "Space",
+      "min": 0,
+      "max": 100,
+      "default": 30,
+      "display": "int",
+      "unit": "%"
+    },
+    {
+      "key": "synth",
+      "name": "Synth With MIDI",
+      "options": [
+        "Off",
+        "On"
+      ],
+      "default": 0
+    },
+    {
+      "key": "channel",
+      "name": "MIDI Ch",
+      "min": 1,
+      "max": 16,
+      "default": 2,
+      "display": "int"
+    },
+    {
+      "key": "bass_ch",
+      "name": "Bass Ch",
+      "min": 0,
+      "max": 16,
+      "default": 0,
+      "display": "int"
+    },
+    {
+      "key": "pad_base",
+      "name": "Pad 1 Note",
+      "min": 0,
+      "max": 112,
+      "default": 36,
+      "display": "int"
+    },
+    {
+      "key": "panic",
+      "name": "All Notes Off",
+      "min": 0,
+      "max": 1,
+      "momentary": true
+    },
+    {
+      "key": "export",
+      "name": "Export MIDI",
+      "min": 0,
+      "max": 1,
+      "momentary": true
+    },
+    {
+      "key": "template",
+      "name": "Template",
+      "options": [
+        "Axis Pop",
+        "50s Doo-Wop",
+        "Sad Pop",
+        "Royal Road",
+        "Jazz ii-V-I",
+        "Turnaround",
+        "Neo Soul Descent",
+        "Backdoor",
+        "Mixolydian Rock",
+        "Gospel Walk",
+        "Canon",
+        "Major-Minor IV",
+        "70s Soul Lift",
+        "Chromatic Soul",
+        "Brit Pop Bridge",
+        "Lo-Fi Sway",
+        "R&B Slow Jam",
+        "Andalusian",
+        "Epic Minor",
+        "Deep House",
+        "Dorian Vamp",
+        "Minor ii-V-i",
+        "Line Cliche",
+        "80s Funk Minor",
+        "Dark Trap",
+        "Cinematic Rise"
+      ],
+      "default": 0
+    },
+    {
+      "key": "load",
+      "name": "Load",
+      "min": 0,
+      "max": 1,
+      "momentary": true
+    },
+    {
+      "key": "tpl_info",
+      "name": "Template Chords",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "port",
+      "name": "MIDI Port",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "info",
+      "name": "Info",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "cursor_name",
+      "name": "Edit Slot Name",
+      "display": "string",
+      "type": "readout"
+    },
+    {
+      "key": "slot_root_name",
+      "name": "Root Name",
+      "display": "string",
+      "type": "readout"
+    },
+    {
+      "key": "slot_type_name",
+      "name": "Type Name",
+      "display": "string",
+      "type": "readout"
+    },
+    {
+      "key": "slot_bass_name",
+      "name": "Bass Name",
+      "display": "string",
+      "type": "readout"
+    },
+    {
+      "key": "slot_var_name",
+      "name": "Variation Name",
+      "display": "string",
+      "type": "readout"
+    },
+    {
+      "key": "bass_ch_name",
+      "name": "Bass Ch Name",
+      "display": "string",
+      "type": "readout"
+    },
+    {
+      "key": "pad_name",
+      "name": "Pad Note Name",
+      "display": "string",
+      "type": "readout"
+    },
+    {
+      "key": "export_status",
+      "name": "Export Status",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "now",
+      "name": "Now Playing",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "cursor_prev",
+      "name": "Slot -",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "cursor",
+      "step_delta": -1
+    },
+    {
+      "key": "cursor_next",
+      "name": "Slot +",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "cursor",
+      "step_delta": 1
+    },
+    {
+      "key": "slot_root_prev",
+      "name": "Root -",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "slot_root",
+      "step_delta": -1
+    },
+    {
+      "key": "slot_root_next",
+      "name": "Root +",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "slot_root",
+      "step_delta": 1
+    },
+    {
+      "key": "slot_type_prev",
+      "name": "Type -",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "slot_type",
+      "step_delta": -1
+    },
+    {
+      "key": "slot_type_next",
+      "name": "Type +",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "slot_type",
+      "step_delta": 1
+    },
+    {
+      "key": "slot_bass_prev",
+      "name": "Bass -",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "slot_bass",
+      "step_delta": -1
+    },
+    {
+      "key": "slot_bass_next",
+      "name": "Bass +",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "slot_bass",
+      "step_delta": 1
+    },
+    {
+      "key": "slot_var_prev",
+      "name": "Variation -",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "slot_var",
+      "step_delta": -1
+    },
+    {
+      "key": "slot_var_next",
+      "name": "Variation +",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "slot_var",
+      "step_delta": 1
+    },
+    {
+      "key": "channel_prev",
+      "name": "MIDI Ch -",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "channel",
+      "step_delta": -1
+    },
+    {
+      "key": "channel_next",
+      "name": "MIDI Ch +",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "channel",
+      "step_delta": 1
+    },
+    {
+      "key": "bass_ch_prev",
+      "name": "Bass Ch -",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "bass_ch",
+      "step_delta": -1
+    },
+    {
+      "key": "bass_ch_next",
+      "name": "Bass Ch +",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "bass_ch",
+      "step_delta": 1
+    },
+    {
+      "key": "pad_base_prev",
+      "name": "Pad Note -",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "pad_base",
+      "step_delta": -1
+    },
+    {
+      "key": "pad_base_next",
+      "name": "Pad Note +",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "pad_base",
+      "step_delta": 1
+    },
+    {
+      "key": "vel_mode",
+      "name": "Pad Velocity",
+      "options": [
+        "Played",
+        "Fixed"
+      ],
+      "default": 0
+    },
+    {
+      "key": "learn",
+      "name": "Learn Pad 1",
+      "min": 0,
+      "max": 1,
+      "momentary": true
+    },
+    {
+      "key": "last_note",
+      "name": "Last Pad Note",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "key_prev",
+      "name": "Key -",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "key",
+      "step_delta": -1
+    },
+    {
+      "key": "key_next",
+      "name": "Key +",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "key",
+      "step_delta": 1
+    },
+    {
+      "key": "scale_prev",
+      "name": "Scale -",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "scale",
+      "step_delta": -1
+    },
+    {
+      "key": "scale_next",
+      "name": "Scale +",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "scale",
+      "step_delta": 1
+    },
+    {
+      "key": "style_prev",
+      "name": "Style -",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "style",
+      "step_delta": -1
+    },
+    {
+      "key": "style_next",
+      "name": "Style +",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "style",
+      "step_delta": 1
+    },
+    {
+      "key": "bars_prev",
+      "name": "Length -",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "bars",
+      "step_delta": -1
+    },
+    {
+      "key": "bars_next",
+      "name": "Length +",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "bars",
+      "step_delta": 1
+    },
+    {
+      "key": "rhythm_prev",
+      "name": "Rhythm -",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "rhythm",
+      "step_delta": -1
+    },
+    {
+      "key": "rhythm_next",
+      "name": "Rhythm +",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "rhythm",
+      "step_delta": 1
+    },
+    {
+      "key": "sound_prev",
+      "name": "Sound -",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "sound",
+      "step_delta": -1
+    },
+    {
+      "key": "sound_next",
+      "name": "Sound +",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "sound",
+      "step_delta": 1
+    },
+    {
+      "key": "template_prev",
+      "name": "Template -",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "template",
+      "step_delta": -1
+    },
+    {
+      "key": "template_next",
+      "name": "Template +",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "template",
+      "step_delta": 1
+    },
+    {
+      "key": "midi_out",
+      "name": "MIDI Out",
+      "options": [
+        "Off",
+        "On"
+      ],
+      "default": 0
+    },
+    {
+      "key": "listen",
+      "name": "Play Mode",
+      "options": [
+        "Off",
+        "MPC",
+        "Listen"
+      ],
+      "default": 1
+    },
+    {
+      "key": "artist",
+      "name": "Artist",
+      "options": [
+        "No Artist",
+        "A. .Paak",
+        "A. Monkeys",
+        "ABBA",
+        "Adele",
+        "Al Green",
+        "Alicia Keys",
+        "Amy Winehouse",
+        "Anita Baker",
+        "Aretha",
+        "Ariana",
+        "B. Eilish",
+        "B. Mars",
+        "B.B. King",
+        "Bach",
+        "Bacharach",
+        "Bad Bunny",
+        "Beach Boys",
+        "Beatles",
+        "Bee Gees",
+        "Beyonce",
+        "Bill Evans",
+        "Bill Withers",
+        "Billy Joel",
+        "Bjork",
+        "Bob Marley",
+        "Bon Iver",
+        "Brent Faiyaz",
+        "BTS",
+        "Burna Boy",
+        "C. Mayfield",
+        "Carole King",
+        "Charlie Puth",
+        "Chick Corea",
+        "Chopin",
+        "Coldplay",
+        "Coltrane",
+        "D'Angelo",
+        "D. Caesar",
+        "D. Hathaway",
+        "David Bowie",
+        "Debussy",
+        "Doja Cat",
+        "Dolly Parton",
+        "Drake",
+        "Dua Lipa",
+        "Eagles",
+        "Ed Sheeran",
+        "Einaudi",
+        "Ellington",
+        "Elton John",
+        "Erykah Badu",
+        "EW&F",
+        "F. Ocean",
+        "Fleetwood Mac",
+        "Gambino",
+        "Green Day",
+        "H. Hancock",
+        "H.E.R.",
+        "Harry Styles",
+        "Hendrix",
+        "J. Cole",
+        "J. Collier",
+        "James Brown",
+        "Jobim",
+        "Joe Hisaishi",
+        "John Mayer",
+        "Johnny Cash",
+        "Joni Mitchell",
+        "Jorja Smith",
+        "Kate Bush",
+        "Kendrick",
+        "Khalid",
+        "Kool & Gang",
+        "L. Vandross",
+        "Lady Gaga",
+        "Lana Del Rey",
+        "Lauryn Hill",
+        "Led Zeppelin",
+        "Linkin Park",
+        "M. Jackson",
+        "Mac DeMarco",
+        "Mariah Carey",
+        "Marvin Gaye",
+        "Max Richter",
+        "Metallica",
+        "Miles Davis",
+        "Monk",
+        "Mozart",
+        "Muse",
+        "Nina Simone",
+        "Nirvana",
+        "Norah Jones",
+        "O. Rodrigo",
+        "Oasis",
+        "P-Funk",
+        "Paul Simon",
+        "Piazzolla",
+        "Pink Floyd",
+        "Post Malone",
+        "Prince",
+        "Queen",
+        "R. Glasper",
+        "Radiohead",
+        "Ray Charles",
+        "RHCP",
+        "Rihanna",
+        "Rosalia",
+        "S. Wonder",
+        "Sade",
+        "Sam Smith",
+        "Satie",
+        "Shakira",
+        "Sinatra",
+        "Sly Stone",
+        "Steely Dan",
+        "Steve Lacy",
+        "SZA",
+        "Tame Impala",
+        "Taylor Swift",
+        "The Police",
+        "Travis Scott",
+        "Tyler",
+        "U2",
+        "Usher",
+        "W. Houston",
+        "Weeknd",
+        "Wizkid"
+      ],
+      "default": 0,
+      "qlink_ticks": 3
+    },
+    {
+      "key": "panel",
+      "name": "Panel",
+      "options": [
+        "Ideas",
+        "History",
+        "Browser",
+        "Big Keys",
+        "Presets",
+        "My Presets"
+      ],
+      "default": 2
+    },
+    {
+      "key": "run",
+      "name": "Listen Play",
+      "options": [
+        "Off",
+        "On"
+      ],
+      "default": 0
+    },
+    {
+      "key": "stop",
+      "name": "Stop",
+      "min": 0,
+      "max": 1,
+      "momentary": true
+    },
+    {
+      "key": "undo",
+      "name": "Undo",
+      "min": 0,
+      "max": 1,
+      "momentary": true
+    },
+    {
+      "key": "redo",
+      "name": "Redo",
+      "min": 0,
+      "max": 1,
+      "momentary": true
+    },
+    {
+      "key": "hist_1",
+      "name": "History 1",
+      "display": "string"
+    },
+    {
+      "key": "hist_2",
+      "name": "History 2",
+      "display": "string"
+    },
+    {
+      "key": "hist_3",
+      "name": "History 3",
+      "display": "string"
+    },
+    {
+      "key": "hist_4",
+      "name": "History 4",
+      "display": "string"
+    },
+    {
+      "key": "hist_5",
+      "name": "History 5",
+      "display": "string"
+    },
+    {
+      "key": "hist_6",
+      "name": "History 6",
+      "display": "string"
+    },
+    {
+      "key": "hist_7",
+      "name": "History 7",
+      "display": "string"
+    },
+    {
+      "key": "hist_8",
+      "name": "History 8",
+      "display": "string"
+    },
+    {
+      "key": "kb_1",
+      "name": "Key Light 1",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kb_2",
+      "name": "Key Light 2",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kb_3",
+      "name": "Key Light 3",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kb_4",
+      "name": "Key Light 4",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kb_5",
+      "name": "Key Light 5",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kb_6",
+      "name": "Key Light 6",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kb_7",
+      "name": "Key Light 7",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kb_8",
+      "name": "Key Light 8",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kb_9",
+      "name": "Key Light 9",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kb_10",
+      "name": "Key Light 10",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kb_11",
+      "name": "Key Light 11",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kb_12",
+      "name": "Key Light 12",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "sel1",
+      "name": "Key Scale",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "sel2",
+      "name": "Style Artist",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "shown",
+      "name": "Shown Chord",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "mode_help",
+      "name": "Mode Help",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "artist_info",
+      "name": "Artist Info",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "artist_prev",
+      "name": "Artist -",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "artist",
+      "step_delta": -1
+    },
+    {
+      "key": "artist_next",
+      "name": "Artist +",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "artist",
+      "step_delta": 1
+    },
+    {
+      "key": "producer",
+      "name": "Producer",
+      "options": [
+        "No Producer",
+        "40",
+        "9th Wonder",
+        "A. Toussaint",
+        "Alchemist",
+        "Arif Mardin",
+        "Avicii",
+        "Babyface",
+        "Battlecat",
+        "Benny Blanco",
+        "Boi-1da",
+        "Brian Eno",
+        "Burial",
+        "Butch Vig",
+        "Calvin Harris",
+        "Cashmere Cat",
+        "D. Guetta",
+        "Daft Punk",
+        "Danger Mouse",
+        "Danny Elfman",
+        "David Foster",
+        "Diplo",
+        "Disclosure",
+        "DJ Premier",
+        "DJ Quik",
+        "Dr. Dre",
+        "F. Knuckles",
+        "Finneas",
+        "Flume",
+        "Flying Lotus",
+        "Frank Dukes",
+        "Fred again..",
+        "G. Kurstin",
+        "G. Moroder",
+        "Gamble & Huff",
+        "George Martin",
+        "Goransson",
+        "H-D-H",
+        "Hans Zimmer",
+        "Hit-Boy",
+        "Isaac Hayes",
+        "J Dilla",
+        "J. Antonoff",
+        "J. Dupri",
+        "Jam & Lewis",
+        "Jeff Lynne",
+        "John Williams",
+        "Just Blaze",
+        "K. Chandler",
+        "K. West",
+        "Kaytranada",
+        "Kenny Beats",
+        "Knxwledge",
+        "Larry Heard",
+        "Lex Luger",
+        "Lillywhite",
+        "Louie Vega",
+        "M. Martin",
+        "Madlib",
+        "Mannie Fresh",
+        "Mark Ronson",
+        "Metro Boomin",
+        "Mike Dean",
+        "Moodymann",
+        "Morricone",
+        "Murda Beatz",
+        "Mustard",
+        "Mutt Lange",
+        "N. Godrich",
+        "N. Rodgers",
+        "N. Whitfield",
+        "No I.D.",
+        "Nujabes",
+        "Organized N.",
+        "P. Bourne",
+        "Pete Rock",
+        "Pharrell",
+        "Phil Spector",
+        "Prince Paul",
+        "Q. Jones",
+        "R. Jerkins",
+        "R. Sakamoto",
+        "R. Tedder",
+        "Rick Rubin",
+        "RZA",
+        "Scott Storch",
+        "Skrillex",
+        "Sounwave",
+        "Southside",
+        "Stargate",
+        "Swizz Beatz",
+        "T. Martin",
+        "T. Rundgren",
+        "Tainy",
+        "Tay Keith",
+        "Teddy Riley",
+        "Thom Bell",
+        "Timbaland",
+        "Trevor Horn",
+        "Vangelis",
+        "W. Mitchell",
+        "Wheezy",
+        "Zaytoven"
+      ],
+      "default": 0,
+      "qlink_ticks": 3
+    },
+    {
+      "key": "scope",
+      "name": "Edit Scope",
+      "options": [
+        "Chord",
+        "Whole"
+      ],
+      "default": 0
+    },
+    {
+      "key": "producer_prev",
+      "name": "Producer -",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "producer",
+      "step_delta": -1
+    },
+    {
+      "key": "producer_next",
+      "name": "Producer +",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "producer",
+      "step_delta": 1
+    },
+    {
+      "key": "keys_open",
+      "name": "Big Keys",
+      "min": 0,
+      "max": 1,
+      "momentary": true
+    },
+    {
+      "key": "br_more",
+      "name": "Open Browser",
+      "min": 0,
+      "max": 1,
+      "momentary": true
+    },
+    {
+      "key": "br_less",
+      "name": "Close Browser",
+      "min": 0,
+      "max": 1,
+      "momentary": true
+    },
+    {
+      "key": "kbx_1",
+      "name": "Big Key 1",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_2",
+      "name": "Big Key 2",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_3",
+      "name": "Big Key 3",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_4",
+      "name": "Big Key 4",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_5",
+      "name": "Big Key 5",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_6",
+      "name": "Big Key 6",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_7",
+      "name": "Big Key 7",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_8",
+      "name": "Big Key 8",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_9",
+      "name": "Big Key 9",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_10",
+      "name": "Big Key 10",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_11",
+      "name": "Big Key 11",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_12",
+      "name": "Big Key 12",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_13",
+      "name": "Big Key 13",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_14",
+      "name": "Big Key 14",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_15",
+      "name": "Big Key 15",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_16",
+      "name": "Big Key 16",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_17",
+      "name": "Big Key 17",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_18",
+      "name": "Big Key 18",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_19",
+      "name": "Big Key 19",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_20",
+      "name": "Big Key 20",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_21",
+      "name": "Big Key 21",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_22",
+      "name": "Big Key 22",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_23",
+      "name": "Big Key 23",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_24",
+      "name": "Big Key 24",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_25",
+      "name": "Big Key 25",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_26",
+      "name": "Big Key 26",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_27",
+      "name": "Big Key 27",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_28",
+      "name": "Big Key 28",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_29",
+      "name": "Big Key 29",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_30",
+      "name": "Big Key 30",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_31",
+      "name": "Big Key 31",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_32",
+      "name": "Big Key 32",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_33",
+      "name": "Big Key 33",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_34",
+      "name": "Big Key 34",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_35",
+      "name": "Big Key 35",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_36",
+      "name": "Big Key 36",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_37",
+      "name": "Big Key 37",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_38",
+      "name": "Big Key 38",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_39",
+      "name": "Big Key 39",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_40",
+      "name": "Big Key 40",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_41",
+      "name": "Big Key 41",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_42",
+      "name": "Big Key 42",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_43",
+      "name": "Big Key 43",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_44",
+      "name": "Big Key 44",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_45",
+      "name": "Big Key 45",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_46",
+      "name": "Big Key 46",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_47",
+      "name": "Big Key 47",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_48",
+      "name": "Big Key 48",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_49",
+      "name": "Big Key 49",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_50",
+      "name": "Big Key 50",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_51",
+      "name": "Big Key 51",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_52",
+      "name": "Big Key 52",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_53",
+      "name": "Big Key 53",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_54",
+      "name": "Big Key 54",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_55",
+      "name": "Big Key 55",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_56",
+      "name": "Big Key 56",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_57",
+      "name": "Big Key 57",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_58",
+      "name": "Big Key 58",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_59",
+      "name": "Big Key 59",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_60",
+      "name": "Big Key 60",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_61",
+      "name": "Big Key 61",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_62",
+      "name": "Big Key 62",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_63",
+      "name": "Big Key 63",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_64",
+      "name": "Big Key 64",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_65",
+      "name": "Big Key 65",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_66",
+      "name": "Big Key 66",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_67",
+      "name": "Big Key 67",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_68",
+      "name": "Big Key 68",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_69",
+      "name": "Big Key 69",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_70",
+      "name": "Big Key 70",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_71",
+      "name": "Big Key 71",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "kbx_72",
+      "name": "Big Key 72",
+      "options": [
+        "Off",
+        "On",
+        "Bass",
+        "New",
+        "Gone"
+      ],
+      "default": 0,
+      "live": true,
+      "poll": false
+    },
+    {
+      "key": "notes",
+      "name": "Chord Notes",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "kb_range",
+      "name": "Keyboard Range",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "scope_help",
+      "name": "Scope Help",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "producer_info",
+      "name": "Producer Info",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "hist_pos",
+      "name": "History Step",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "br_key",
+      "name": "Key Name",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "br_scale",
+      "name": "Scale Name",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "br_style",
+      "name": "Style Name",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "br_artist",
+      "name": "Artist Name",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "br_producer",
+      "name": "Producer Name",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "kb_name",
+      "name": "Keys Chord",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "style_mix",
+      "name": "Style Influence",
+      "min": 0,
+      "max": 100,
+      "default": 50,
+      "display": "int",
+      "unit": "%"
+    },
+    {
+      "key": "artist_mix",
+      "name": "Artist Influence",
+      "min": 0,
+      "max": 100,
+      "default": 50,
+      "display": "int",
+      "unit": "%"
+    },
+    {
+      "key": "producer_mix",
+      "name": "Producer Influence",
+      "min": 0,
+      "max": 100,
+      "default": 50,
+      "display": "int",
+      "unit": "%"
+    },
+    {
+      "key": "browse",
+      "name": "Browse",
+      "options": [
+        "Key",
+        "Scale",
+        "Style",
+        "Artist",
+        "Producer"
+      ],
+      "default": 3
+    },
+    {
+      "key": "cruise",
+      "name": "Cruise",
+      "min": 0,
+      "max": 1,
+      "momentary": true
+    },
+    {
+      "key": "loop_sync",
+      "name": "Loop Sync",
+      "options": [
+        "Manual",
+        "Auto (MPC)",
+        "1 Bar",
+        "2 Bars",
+        "4 Bars",
+        "8 Bars",
+        "16 Bars",
+        "32 Bars"
+      ],
+      "default": 1
+    },
+    {
+      "key": "lib_kind",
+      "name": "Library",
+      "options": [
+        "Artists",
+        "Producers"
+      ],
+      "default": 1
+    },
+    {
+      "key": "prof_1",
+      "name": "Profile Line 1",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "prof_2",
+      "name": "Profile Line 2",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "prof_3",
+      "name": "Profile Line 3",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "prof_4",
+      "name": "Profile Line 4",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "prof_5",
+      "name": "Profile Line 5",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "prof_6",
+      "name": "Profile Line 6",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "prof_7",
+      "name": "Profile Line 7",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "loop_info",
+      "name": "Loop Info",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "cruise_next",
+      "name": "Cruise Next",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "mix_info",
+      "name": "Mix Info",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "bri_1",
+      "name": "Browser Tile 1",
+      "display": "string"
+    },
+    {
+      "key": "bri_2",
+      "name": "Browser Tile 2",
+      "display": "string"
+    },
+    {
+      "key": "bri_3",
+      "name": "Browser Tile 3",
+      "display": "string"
+    },
+    {
+      "key": "bri_4",
+      "name": "Browser Tile 4",
+      "display": "string"
+    },
+    {
+      "key": "bri_5",
+      "name": "Browser Tile 5",
+      "display": "string"
+    },
+    {
+      "key": "bri_6",
+      "name": "Browser Tile 6",
+      "display": "string"
+    },
+    {
+      "key": "bri_7",
+      "name": "Browser Tile 7",
+      "display": "string"
+    },
+    {
+      "key": "bri_8",
+      "name": "Browser Tile 8",
+      "display": "string"
+    },
+    {
+      "key": "bri_9",
+      "name": "Browser Tile 9",
+      "display": "string"
+    },
+    {
+      "key": "bri_10",
+      "name": "Browser Tile 10",
+      "display": "string"
+    },
+    {
+      "key": "bri_11",
+      "name": "Browser Tile 11",
+      "display": "string"
+    },
+    {
+      "key": "bri_12",
+      "name": "Browser Tile 12",
+      "display": "string"
+    },
+    {
+      "key": "bri_13",
+      "name": "Browser Tile 13",
+      "display": "string"
+    },
+    {
+      "key": "bri_14",
+      "name": "Browser Tile 14",
+      "display": "string"
+    },
+    {
+      "key": "lib_1",
+      "name": "Library Tile 1",
+      "display": "string"
+    },
+    {
+      "key": "lib_2",
+      "name": "Library Tile 2",
+      "display": "string"
+    },
+    {
+      "key": "lib_3",
+      "name": "Library Tile 3",
+      "display": "string"
+    },
+    {
+      "key": "lib_4",
+      "name": "Library Tile 4",
+      "display": "string"
+    },
+    {
+      "key": "lib_5",
+      "name": "Library Tile 5",
+      "display": "string"
+    },
+    {
+      "key": "lib_6",
+      "name": "Library Tile 6",
+      "display": "string"
+    },
+    {
+      "key": "lib_7",
+      "name": "Library Tile 7",
+      "display": "string"
+    },
+    {
+      "key": "lib_8",
+      "name": "Library Tile 8",
+      "display": "string"
+    },
+    {
+      "key": "lib_9",
+      "name": "Library Tile 9",
+      "display": "string"
+    },
+    {
+      "key": "lib_10",
+      "name": "Library Tile 10",
+      "display": "string"
+    },
+    {
+      "key": "lib_11",
+      "name": "Library Tile 11",
+      "display": "string"
+    },
+    {
+      "key": "lib_12",
+      "name": "Library Tile 12",
+      "display": "string"
+    },
+    {
+      "key": "lib_13",
+      "name": "Library Tile 13",
+      "display": "string"
+    },
+    {
+      "key": "lib_14",
+      "name": "Library Tile 14",
+      "display": "string"
+    },
+    {
+      "key": "rrate",
+      "name": "Rhythm Rate",
+      "options": [
+        "Auto",
+        "1/64T",
+        "1/64",
+        "1/32T",
+        "1/32",
+        "1/16T",
+        "1/16",
+        "1/8T",
+        "1/8",
+        "1/4T",
+        "1/4",
+        "1/2T",
+        "1/2 Bar",
+        "1 Bar",
+        "2 Bars",
+        "4 Bars",
+        "8 Bars",
+        "16 Bars"
+      ],
+      "default": 0,
+      "qlink_ticks": 3
+    },
+    {
+      "key": "pad_count",
+      "name": "Pads Used",
+      "min": 1,
+      "max": 16,
+      "default": 16,
+      "display": "int"
+    },
+    {
+      "key": "preset",
+      "name": "Preset",
+      "min": 0,
+      "max": 39,
+      "default": 0,
+      "display": "int"
+    },
+    {
+      "key": "save_slot",
+      "name": "Save Slot",
+      "min": 1,
+      "max": 16,
+      "default": 1,
+      "display": "int"
+    },
+    {
+      "key": "save_preset",
+      "name": "Save Preset",
+      "min": 0,
+      "max": 1,
+      "momentary": true
+    },
+    {
+      "key": "preset_info",
+      "name": "Preset Info",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "kb_diff",
+      "name": "Keys Change",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "style_info",
+      "name": "Style Info",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "save_slot_name",
+      "name": "Save Slot Name",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "learn_info",
+      "name": "Learn Info",
+      "display": "string",
+      "type": "readout",
+      "poll": true
+    },
+    {
+      "key": "pre_1",
+      "name": "Factory Preset 1",
+      "display": "string"
+    },
+    {
+      "key": "pre_2",
+      "name": "Factory Preset 2",
+      "display": "string"
+    },
+    {
+      "key": "pre_3",
+      "name": "Factory Preset 3",
+      "display": "string"
+    },
+    {
+      "key": "pre_4",
+      "name": "Factory Preset 4",
+      "display": "string"
+    },
+    {
+      "key": "pre_5",
+      "name": "Factory Preset 5",
+      "display": "string"
+    },
+    {
+      "key": "pre_6",
+      "name": "Factory Preset 6",
+      "display": "string"
+    },
+    {
+      "key": "pre_7",
+      "name": "Factory Preset 7",
+      "display": "string"
+    },
+    {
+      "key": "pre_8",
+      "name": "Factory Preset 8",
+      "display": "string"
+    },
+    {
+      "key": "pre_9",
+      "name": "Factory Preset 9",
+      "display": "string"
+    },
+    {
+      "key": "pre_10",
+      "name": "Factory Preset 10",
+      "display": "string"
+    },
+    {
+      "key": "pre_11",
+      "name": "Factory Preset 11",
+      "display": "string"
+    },
+    {
+      "key": "pre_12",
+      "name": "Factory Preset 12",
+      "display": "string"
+    },
+    {
+      "key": "pre_13",
+      "name": "Factory Preset 13",
+      "display": "string"
+    },
+    {
+      "key": "pre_14",
+      "name": "Factory Preset 14",
+      "display": "string"
+    },
+    {
+      "key": "pre_15",
+      "name": "Factory Preset 15",
+      "display": "string"
+    },
+    {
+      "key": "pre_16",
+      "name": "Factory Preset 16",
+      "display": "string"
+    },
+    {
+      "key": "pre_17",
+      "name": "Factory Preset 17",
+      "display": "string"
+    },
+    {
+      "key": "pre_18",
+      "name": "Factory Preset 18",
+      "display": "string"
+    },
+    {
+      "key": "pre_19",
+      "name": "Factory Preset 19",
+      "display": "string"
+    },
+    {
+      "key": "pre_20",
+      "name": "Factory Preset 20",
+      "display": "string"
+    },
+    {
+      "key": "pre_21",
+      "name": "Factory Preset 21",
+      "display": "string"
+    },
+    {
+      "key": "pre_22",
+      "name": "Factory Preset 22",
+      "display": "string"
+    },
+    {
+      "key": "pre_23",
+      "name": "Factory Preset 23",
+      "display": "string"
+    },
+    {
+      "key": "pre_24",
+      "name": "Factory Preset 24",
+      "display": "string"
+    },
+    {
+      "key": "usr_1",
+      "name": "User Preset 1",
+      "display": "string"
+    },
+    {
+      "key": "usr_2",
+      "name": "User Preset 2",
+      "display": "string"
+    },
+    {
+      "key": "usr_3",
+      "name": "User Preset 3",
+      "display": "string"
+    },
+    {
+      "key": "usr_4",
+      "name": "User Preset 4",
+      "display": "string"
+    },
+    {
+      "key": "usr_5",
+      "name": "User Preset 5",
+      "display": "string"
+    },
+    {
+      "key": "usr_6",
+      "name": "User Preset 6",
+      "display": "string"
+    },
+    {
+      "key": "usr_7",
+      "name": "User Preset 7",
+      "display": "string"
+    },
+    {
+      "key": "usr_8",
+      "name": "User Preset 8",
+      "display": "string"
+    },
+    {
+      "key": "usr_9",
+      "name": "User Preset 9",
+      "display": "string"
+    },
+    {
+      "key": "usr_10",
+      "name": "User Preset 10",
+      "display": "string"
+    },
+    {
+      "key": "usr_11",
+      "name": "User Preset 11",
+      "display": "string"
+    },
+    {
+      "key": "usr_12",
+      "name": "User Preset 12",
+      "display": "string"
+    },
+    {
+      "key": "usr_13",
+      "name": "User Preset 13",
+      "display": "string"
+    },
+    {
+      "key": "usr_14",
+      "name": "User Preset 14",
+      "display": "string"
+    },
+    {
+      "key": "usr_15",
+      "name": "User Preset 15",
+      "display": "string"
+    },
+    {
+      "key": "usr_16",
+      "name": "User Preset 16",
+      "display": "string"
+    },
+    {
+      "key": "save_slot_prev",
+      "name": "Save Slot -",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "save_slot",
+      "step_delta": -1
+    },
+    {
+      "key": "save_slot_next",
+      "name": "Save Slot +",
+      "min": 0,
+      "max": 1,
+      "momentary": true,
+      "step_of": "save_slot",
+      "step_delta": 1
+    },
+    {
+      "key": "strum_mode",
+      "name": "Strum Direction",
+      "options": [
+        "Up",
+        "Down",
+        "Alternate",
+        "Guitar",
+        "Random"
+      ],
+      "default": 0
+    },
+    {
+      "key": "slot_rev",
+      "name": "Reverse",
+      "options": [
+        "Off",
+        "On"
+      ],
+      "default": 0
+    }
+  ]
+}

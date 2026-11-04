@@ -1,0 +1,41 @@
+CheatChord 4.1.0 Desktop  (JJ DA PLUG)  -  Installation
+==========================================================
+
+WINDOWS
+-------
+VST3 (Ableton, Cubase, FL Studio, Reaper, Bitwig, Studio One, MPC 3):
+  Copy the folder  CheatChord.vst3  to
+      C:\Program Files\Common Files\VST3\
+  Then let the DAW rescan its plugins.
+
+VST2 for MPC 2 desktop (MPC 2.x loads only VST2 plugins on Windows):
+  1. Copy  VST2 (MPC 2)\CheatChord.dll  into your VST folder, for example
+         C:\Program Files\VSTPlugins\
+     (MPC: Edit > Preferences > Plugins shows which folder MPC scans; add one there if needed.)
+  2. MPC: Preferences > Plugins > Rescan.
+  3. Create a Plugin track and pick  JJ DA PLUG > CheatChord.
+
+Standalone:  CheatChord.exe  runs without a DAW (pick an audio and MIDI device under Options).
+
+MACOS (Apple Silicon and Intel)
+-------------------------------
+  CheatChord.vst3        ->  ~/Library/Audio/Plug-Ins/VST3/
+  CheatChord.component   ->  ~/Library/Audio/Plug-Ins/Components/   (Logic, GarageBand, MPC 2 on Mac)
+  CheatChord.vst         ->  ~/Library/Audio/Plug-Ins/VST/          (MPC 2 on Mac, older hosts)
+  CheatChord.app         ->  Applications
+
+The plugins are not signed by Apple. Open Terminal once and run (for each file you copied):
+      xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/VST3/CheatChord.vst3
+      xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/Components/CheatChord.component
+      xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/VST/CheatChord.vst
+then restart the DAW.
+
+LINUX
+-----
+  CheatChord.vst3  ->  ~/.vst3/
+
+YOUR FILES
+----------
+  Documents/JJ DA PLUG/CheatChord/Presets        your 16 user presets
+  Documents/JJ DA PLUG/CheatChord/MIDI Exports   EXPORT .MID
+  Documents/JJ DA PLUG/CheatChord/Layouts        your own layouts (see README.txt there)
