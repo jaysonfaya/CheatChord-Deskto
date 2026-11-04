@@ -41,4 +41,6 @@ const mpc_engine_t *mpc_engine(void);
  * rename other controls. A weak symbol, not an mpc_engine_t member: an engine that doesn't define it is unaffected
  * (a C++ engine defines it extern "C", as it does mpc_engine()). Unlike HAS_DISPLAY_REV, nothing is polled: only the
  * keys the engine names are read back. `poc/selfset` is the test engine. */
+#if defined(__GNUC__) || defined(__clang__)
 int mpc_engine_changed(void *inst, char *key, int len) __attribute__((weak));
+#endif

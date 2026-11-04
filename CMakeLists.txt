@@ -88,7 +88,7 @@ juce_add_binary_data (CheatChordData SOURCES
     assets/jf_velvet.png)
 
 target_sources (CheatChord PRIVATE
-    plugin/Engine.cpp
+    plugin/CCEngine.cpp
     plugin/PluginProcessor.cpp
     plugin/PluginEditor.cpp
     plugin/ui/Theme.cpp
