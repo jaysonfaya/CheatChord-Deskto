@@ -1,0 +1,114 @@
+# CheatChord desktop: builds VST3 (+ AU, Standalone) for Windows, macOS and Linux, tests them, and uploads ready zips.
+name: Build CheatChord
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DCC_VST2=ON
+      - name: Build
+        run: cmake --build build --config Release --parallel
+      - name: Pack
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force dist/CheatChord-Windows | Out-Null
+          Copy-Item -Recurse build/CheatChord_artefacts/Release/VST3/CheatChord.vst3 dist/CheatChord-Windows/
+          New-Item -ItemType Directory -Force "dist/CheatChord-Windows/VST2 (MPC 2)" | Out-Null
+          Copy-Item build/CheatChord_artefacts/Release/VST/CheatChord.dll "dist/CheatChord-Windows/VST2 (MPC 2)/"
+          Copy-Item build/CheatChord_artefacts/Release/Standalone/CheatChord.exe dist/CheatChord-Windows/
+          Copy-Item INSTALL.txt dist/CheatChord-Windows/
+          Copy-Item ANLEITUNG.md dist/CheatChord-Windows/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CheatChord-4.1.0-Windows
+          path: dist/CheatChord-Windows
+      - name: pluginval (strictness 5)
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          Invoke-WebRequest https://github.com/Tracktion/pluginval/releases/latest/download/pluginval_Windows.zip -OutFile pv.zip
+          Expand-Archive pv.zip -DestinationPath pv
+          ./pv/pluginval.exe --strictness-level 5 --skip-gui-tests --validate-in-process --validate "dist/CheatChord-Windows/CheatChord.vst3"
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
+  macos:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure (Universal: Apple Silicon + Intel)
+        run: cmake -S . -B build -G Xcode -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCC_VST2=ON
+      - name: Build
+        run: cmake --build build --config Release --parallel 4
+      - name: Sign (ad hoc) and pack
+        run: |
+          mkdir -p dist/CheatChord-macOS
+          cp -R build/CheatChord_artefacts/Release/VST3/CheatChord.vst3 dist/CheatChord-macOS/
+          cp -R build/CheatChord_artefacts/Release/AU/CheatChord.component dist/CheatChord-macOS/
+          cp -R build/CheatChord_artefacts/Release/VST/CheatChord.vst dist/CheatChord-macOS/
+          cp -R build/CheatChord_artefacts/Release/Standalone/CheatChord.app dist/CheatChord-macOS/
+          for b in dist/CheatChord-macOS/*.vst3 dist/CheatChord-macOS/*.vst dist/CheatChord-macOS/*.component dist/CheatChord-macOS/*.app; do codesign --force --deep -s - "$b"; done
+          cp INSTALL.txt ANLEITUNG.md dist/CheatChord-macOS/
+          cd dist && ditto -c -k --keepParent CheatChord-macOS CheatChord-macOS.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CheatChord-4.1.0-macOS
+          path: dist/CheatChord-macOS.zip
+      - name: pluginval (strictness 5)
+        continue-on-error: true
+        run: |
+          curl -sSL -o pv.zip https://github.com/Tracktion/pluginval/releases/latest/download/pluginval_macOS.zip
+          unzip -q pv.zip
+          ./pluginval.app/Contents/MacOS/pluginval --strictness-level 5 --skip-gui-tests --validate-in-process --validate dist/CheatChord-macOS/CheatChord.vst3
+      - name: AU validation
+        continue-on-error: true
+        run: |
+          mkdir -p ~/Library/Audio/Plug-Ins/Components
+          cp -R dist/CheatChord-macOS/CheatChord.component ~/Library/Audio/Plug-Ins/Components/
+          killall -9 AudioComponentRegistrar || true
+          auval -v aumu ChtC JjDp
+
+  linux:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build libasound2-dev libjack-jackd2-dev libfreetype-dev libfontconfig1-dev \
+            libx11-dev libxcomposite-dev libxcursor-dev libxext-dev libxinerama-dev libxrandr-dev libxrender-dev \
+            libgl1-mesa-dev xvfb
+      - name: Engine test (ASan/UBSan, the MPC build's checks)
+        run: |
+          SRC="engine/chordpilot.c engine/harmony.c engine/theory.c engine/voicing.c engine/synth.c engine/seq_out.c engine/library.c engine/artists.c engine/refs.c engine/compat.c"
+          gcc -O1 -g -fsanitize=address,undefined -std=gnu11 -Iengine $SRC tests_engine/engine_test.c -lm -lpthread -o /tmp/cc_engine_test
+          (cd /tmp && ./cc_engine_test | tail -3)
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCC_BUILD_HOST_TEST=ON -DCC_VST2=ON
+      - name: Build
+        run: cmake --build build
+      - name: Host test (loads the VST3, plays it at 44.1 / 48 / 96 kHz)
+        run: xvfb-run -a build/cc_host_test_artefacts/Release/cc_host_test build/CheatChord_artefacts/Release/VST3/CheatChord.vst3
+      - name: VST2 test (the ABI from a host's side, as MPC 2 loads it)
+        run: |
+          gcc -O1 -o vst2_test tests/vst2_test.c -ldl -lm
+          xvfb-run -a ./vst2_test build/CheatChord_artefacts/Release/VST/libCheatChord.so
+      - name: Screenshots of every layout
+        run: xvfb-run -a -s "-screen 0 2560x1440x24" build/cc_ui_shots_artefacts/Release/cc_ui_shots shots
+      - name: Pack
+        run: |
+          mkdir -p dist/CheatChord-Linux
+          cp -R build/CheatChord_artefacts/Release/VST3/CheatChord.vst3 build/CheatChord_artefacts/Release/Standalone/CheatChord INSTALL.txt ANLEITUNG.md dist/CheatChord-Linux/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CheatChord-4.1.0-Linux
+          path: dist/CheatChord-Linux
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CheatChord-4.1.0-Screenshots
+          path: shots
