@@ -204,7 +204,7 @@ public:
     void update() override;
     void resized() override;
     void paint (juce::Graphics&) override;
-    Tile layoutBtn { Tile::Ghost }, zoomBtn { Tile::Ghost }, helpBtn { Tile::Ghost };
+    Tile layoutBtn { Tile::Ghost }, zoomBtn { Tile::Ghost }, helpBtn { Tile::Ghost }, editBtn { Tile::Ghost }, helperBtn { Tile::Ghost };
 private:
     Line sel1, sel2, chord;
     Keyboard mini;

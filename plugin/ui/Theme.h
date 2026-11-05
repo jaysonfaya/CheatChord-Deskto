@@ -16,7 +16,14 @@ void setTheme (int index);           // 0 Velvet, 1 Graphite, 2 Daylight
 int theme();
 juce::StringArray themeNames();
 
-juce::Font font (float h, int weight = 1);   // 0 regular, 1 semibold, 2 bold
+juce::Font font (float h, int weight = 1);   // 0 regular, 1 semibold, 2 bold; h is multiplied by the text size
+// TEXT SIZE (layout menu): every font and every fixed row height grows with it
+float textScale();
+void setTextScale (float s);
+inline int U (int px) { return (int) std::lround (px * textScale()); }
+inline float Uf (float px) { return px * textScale(); }
+// each panel has its own colour (tabs, title bar, pop-out window)
+juce::Colour panelColour (const juce::String& id);
 juce::Image logoImage();      // the medallion + CHEATCHORD wordmark
 juce::Image medallionImage();
 juce::Image jfImage();        // the JF logo in red velvet

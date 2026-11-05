@@ -72,14 +72,23 @@ int main (int argc, char** argv)
     p->uiState().setProperty ("theme", 0, nullptr);
     ed = nullptr;
     ed.reset (dynamic_cast<cc::Editor*> (p->createEditor()));
-    // zoomed and resized: the same layout reflows
+    // the helper explaining something, a panel in its own window, then EDIT LAYOUT
     ed->selectLayout ("Studio", false);
-    ed->setZoom (0.8f);
-    ed->setSize (1248, 784);
-    shot (*ed, out.getChildFile ("studio_80pct.png"));
     ed->setZoom (1.0f);
-    ed->setSize (1900, 1000);
-    shot (*ed, out.getChildFile ("studio_stretched.png"));
+    ed->setSize (1600, 1000);
+    ed->setHelper (true);
+    ed->showHelp ("Cruise", "Adds the next chord that fits after the selected one (the suggestion shows on the button).");
+    ed->popOut ("sound");
+    shot (*ed, out.getChildFile ("studio_helper_window.png"));
+    ed->setEditing (true);
+    shot (*ed, out.getChildFile ("studio_edit_layout.png"));
+    ed->setEditing (false);
+    ed->setTextSize (1.5f);
+    shot (*ed, out.getChildFile ("studio_text150.png"));
+    ed->setTextSize (1.25f);
+    ed->setZoom (0.8f);
+    ed->setSize (1280, 800);
+    shot (*ed, out.getChildFile ("studio_80pct.png"));
     ed = nullptr;
     p->releaseResources();
     return 0;

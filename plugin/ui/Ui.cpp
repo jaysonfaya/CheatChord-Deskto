@@ -107,20 +107,43 @@ void grid (std::vector<juce::Component*> items, juce::Rectangle<int> r, int cols
 
 void label (juce::Graphics& g, const juce::String& t, juce::Rectangle<int> r, juce::Justification j)
 {
-    fitText (g, t.toUpperCase(), r.toFloat(), 13.5f, 2, pal().dim, j, 9.0f);
+    fitText (g, t.toUpperCase(), r.toFloat(), 15.0f, 2, pal().dim, j, 10.0f);
 }
 
 // ================================================================ Panel
 juce::Rectangle<int> Panel::titleBar() const
 {
-    return title.isEmpty() ? juce::Rectangle<int>() : getLocalBounds().reduced (12, 0).withTrimmedTop (6).withHeight (24);
+    return title.isEmpty() ? juce::Rectangle<int>() : getLocalBounds().reduced (12, 0).withTrimmedTop (5).withHeight (U (28));
+}
+
+juce::Rectangle<int> Panel::popButton() const
+{
+    if (title.isEmpty() || ! onPopOut) return {};
+    auto t = titleBar();
+    return t.removeFromRight (t.getHeight()).reduced (2);
 }
 
 juce::Rectangle<int> Panel::content() const
 {
     auto r = getLocalBounds().reduced (12, 10);
-    if (title.isNotEmpty()) r.removeFromTop (26);
+    if (title.isNotEmpty()) r.removeFromTop (U (30));
     return r;
+}
+
+static void drawPopIcon (juce::Graphics& g, juce::Rectangle<float> b, juce::Colour c, bool hot)
+{
+    g.setColour (hot ? c.withAlpha (0.25f) : juce::Colours::transparentBlack);
+    g.fillRoundedRectangle (b, 4.0f);
+    auto r = b.reduced (b.getWidth() * 0.24f);
+    g.setColour (c);
+    g.drawRect (r.withTrimmedTop (r.getHeight() * 0.3f).withTrimmedRight (r.getWidth() * 0.3f), 1.6f);
+    juce::Path a;
+    a.startNewSubPath (r.getCentreX(), r.getCentreY());
+    a.lineTo (r.getRight(), r.getY());
+    a.startNewSubPath (r.getRight() - r.getWidth() * 0.4f, r.getY());
+    a.lineTo (r.getRight(), r.getY());
+    a.lineTo (r.getRight(), r.getY() + r.getHeight() * 0.4f);
+    g.strokePath (a, juce::PathStrokeType (1.6f));
 }
 
 void Panel::paint (juce::Graphics& g)
@@ -129,14 +152,37 @@ void Panel::paint (juce::Graphics& g)
     auto r = getLocalBounds().toFloat().reduced (0.5f);
     g.setColour (pal().panel);
     g.fillRoundedRectangle (r, 8.0f);
-    g.setColour (pal().border);
-    g.drawRoundedRectangle (r, 8.0f, 1.0f);
     if (title.isNotEmpty())
     {
+        // the panel's colour: a band on top and the title in it
+        auto band = r.withHeight ((float) U (30) + 8.0f);
+        g.setColour (accent.withAlpha (0.16f));
+        g.fillRoundedRectangle (band, 8.0f);
+        g.fillRect (band.withTrimmedTop (8.0f));
+        g.setColour (accent);
+        g.fillRoundedRectangle (r.withHeight (4.0f).reduced (6.0f, 0), 2.0f);
         auto t = titleBar().toFloat();
-        fitText (g, title.toUpperCase(), t, 17.0f, 2, pal().gold, juce::Justification::centredLeft);
-        g.setColour (pal().goldDim.withAlpha (0.45f));
-        g.fillRect (t.getX(), t.getBottom() + 1.0f, t.getWidth(), 1.0f);
+        if (! popButton().isEmpty()) t.removeFromRight ((float) t.getHeight() + 4);
+        fitText (g, title.toUpperCase(), t, 18.0f, 2, accent, juce::Justification::centredLeft);
+        if (! popButton().isEmpty())
+            drawPopIcon (g, popButton().toFloat(), accent, popButton().contains (getMouseXYRelative()) && isMouseOver());
+    }
+    g.setColour (accent.withAlpha (0.45f));
+    g.drawRoundedRectangle (r, 8.0f, 1.2f);
+}
+
+void Panel::mouseDown (const juce::MouseEvent& e)
+{
+    if (popButton().contains (e.getPosition()) && onPopOut) onPopOut();
+}
+
+void Panel::mouseMove (const juce::MouseEvent& e)
+{
+    repaint (titleBar());
+    if (onHint)
+    {
+        if (popButton().contains (e.getPosition())) onHint ("Open as window", "Opens " + title + " in its own small window you can move and resize. Dock it again with the button in its title bar.");
+        else if (titleBar().contains (e.getPosition())) onHint (title, about);
     }
 }
 
@@ -309,7 +355,7 @@ void Bar::mouseMove (const juce::MouseEvent& e)
     {
         hover = h;
         repaint();
-        if (ctx.hint && help.isNotEmpty()) ctx.hint (help);
+        if (help.isNotEmpty()) ctx.help (helpTitle.isNotEmpty() ? helpTitle : (hover >= 0 ? labels[hover] : juce::String()), help);
     }
 }
 
@@ -332,9 +378,9 @@ void Knob::paint (juce::Graphics& g)
 {
     auto& p = pal();
     auto r = getLocalBounds().toFloat();
-    auto lab = r.removeFromTop (juce::jmin (20.0f, r.getHeight() * 0.2f));
-    auto val = r.removeFromBottom (juce::jmin (22.0f, r.getHeight() * 0.24f));
-    fitText (g, label.toUpperCase(), lab, 13.5f, 2, p.dim, juce::Justification::centred, 8.0f);
+    auto lab = r.removeFromTop (juce::jmin (Uf (22.0f), r.getHeight() * 0.22f));
+    auto val = r.removeFromBottom (juce::jmin (Uf (24.0f), r.getHeight() * 0.25f));
+    fitText (g, label.toUpperCase(), lab, 15.0f, 2, p.dim, juce::Justification::centred, 9.0f);
     const float d = juce::jmin (r.getWidth(), r.getHeight()) - 4.0f;
     auto k = juce::Rectangle<float> (d, d).withCentre (r.getCentre());
     const float a0 = juce::MathConstants<float>::pi * 1.25f, a1 = juce::MathConstants<float>::pi * 2.75f;
@@ -357,7 +403,7 @@ void Knob::paint (juce::Graphics& g)
     juce::Point<float> tip = c + juce::Point<float> (std::sin (a), -std::cos (a)) * (cap.getWidth() * 0.42f);
     g.setColour (p.text);
     g.drawLine ({ c + (tip - c) * 0.35f, tip }, juce::jmax (2.0f, d * 0.05f));
-    fitText (g, fmt (v), val, 16.0f, 1, p.text, juce::Justification::centred, 9.0f);
+    fitText (g, fmt (v), val, 18.0f, 1, p.text, juce::Justification::centred, 10.0f);
 }
 
 void Knob::send (int nv)
@@ -384,7 +430,7 @@ void Knob::mouseWheelMove (const juce::MouseEvent&, const juce::MouseWheelDetail
     const int step = juce::jmax (1, (mx - mn) / 50);
     send (v + (w.deltaY > 0 ? step : w.deltaY < 0 ? -step : 0));
 }
-void Knob::mouseEnter (const juce::MouseEvent&) { if (ctx.hint && help.isNotEmpty()) ctx.hint (help); }
+void Knob::mouseEnter (const juce::MouseEvent&) { if (help.isNotEmpty()) ctx.help (label, help); }
 
 // ================================================================ Picker
 Picker::Picker (Ctx& c, const char* k, const juce::String& l, bool s) : Live (c), key (k), label (l), searchable (s)
@@ -410,7 +456,7 @@ void Picker::update()
 void Picker::resized()
 {
     auto r = getLocalBounds();
-    if (label.isNotEmpty()) r.removeFromTop (juce::jmin (20, r.getHeight() / 2));
+    if (label.isNotEmpty()) r.removeFromTop (juce::jmin (U (22), r.getHeight() / 2));
     const int bw = juce::jmin (34, r.getWidth() / 6);
     prev.setBounds (r.removeFromLeft (bw));
     next.setBounds (r.removeFromRight (bw));
@@ -422,7 +468,7 @@ void Picker::paint (juce::Graphics& g)
 {
     auto& p = pal();
     if (label.isNotEmpty())
-        cc::ui::label (g, label, getLocalBounds().removeFromTop (juce::jmin (20, getHeight() / 2)));
+        cc::ui::label (g, label, getLocalBounds().removeFromTop (juce::jmin (U (22), getHeight() / 2)));
     auto f = field.toFloat();
     const bool over = isMouseOver (false) && field.contains (getMouseXYRelative());
     g.setColour (over ? p.tileHover : p.tile);
@@ -433,14 +479,14 @@ void Picker::paint (juce::Graphics& g)
     juce::String t = i >= 0 && i < options.size() ? options[i] : juce::String (v);
     auto tr = f.reduced (10.0f, 2.0f);
     auto arrow = tr.removeFromRight (14.0f);
-    fitText (g, t, tr, juce::jmin (17.0f, f.getHeight() * 0.55f), 1, p.gold, juce::Justification::centredLeft, 9.0f);
+    fitText (g, t, tr, 18.0f, 1, p.gold, juce::Justification::centredLeft, 10.0f);
     juce::Path tri;
     tri.addTriangle (arrow.getX(), arrow.getCentreY() - 3, arrow.getRight(), arrow.getCentreY() - 3, arrow.getCentreX(), arrow.getCentreY() + 4);
     g.setColour (p.goldDim);
     g.fillPath (tri);
 }
 
-void Picker::mouseEnter (const juce::MouseEvent&) { if (ctx.hint && help.isNotEmpty()) ctx.hint (help); }
+void Picker::mouseEnter (const juce::MouseEvent&) { if (help.isNotEmpty()) ctx.help (label, help); }
 
 void Picker::step (int d)
 {
@@ -491,7 +537,7 @@ SearchList::SearchList (Ctx& c, const char* k, const juce::String& t, std::funct
     if (auto* m = findParam (key))
         for (int i = 0; i < m->nopt; ++i) options.add (desktopText (m->opt[i]));
     search.setTextToShowWhenEmpty ("Search " + title.toLowerCase() + "...", pal().faint);
-    search.setFont (font (16.0f, 0));
+    search.setFont (font (17.0f, 0));
     search.addListener (this);
     search.setIndents (8, 5);
     list.setModel (this);
@@ -533,10 +579,10 @@ void SearchList::update()
 void SearchList::resized()
 {
     auto r = getLocalBounds();
-    if (title.isNotEmpty() && ! onPicked) r.removeFromTop (22);
-    search.setBounds (take (r, juce::jmin (32, r.getHeight() / 4), 6));
+    if (title.isNotEmpty() && ! onPicked) r.removeFromTop (U (24));
+    search.setBounds (take (r, juce::jmin (U (34), r.getHeight() / 4), 6));
     list.setBounds (r);
-    list.setRowHeight (juce::jlimit (26, 34, getHeight() / 14));
+    list.setRowHeight (juce::jlimit (U (26), U (34), getHeight() / 12));
 }
 
 void SearchList::paint (juce::Graphics& g)
@@ -544,7 +590,7 @@ void SearchList::paint (juce::Graphics& g)
     if (title.isNotEmpty() && ! onPicked)
     {
         juce::String t = title + "  (" + juce::String (options.size() - (options.size() > 0 && options[0].startsWith ("No ") ? 1 : 0)) + ")";
-        label (g, t, getLocalBounds().removeFromTop (20));
+        label (g, t, getLocalBounds().removeFromTop (U (22)));
     }
     g.setColour (pal().bg.withAlpha (0.35f));
     g.fillRoundedRectangle (list.getBounds().toFloat(), 5.0f);

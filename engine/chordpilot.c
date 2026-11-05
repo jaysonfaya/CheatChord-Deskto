@@ -2861,6 +2861,7 @@ static void *create(const char *data_dir) {
     s->p[P_MIDI_OUT] = 1;   /* desktop: MIDI to the host and the synth at once; channel 1 */
     s->p[P_SYNTH] = 1;
     s->p[P_CHANNEL] = 1;
+    s->p[P_SOUND] = S_PIANO;   /* desktop: the grand piano first */
     s->sr = g_sr;
     s->sel = -1;
     s->play_slot = -1;

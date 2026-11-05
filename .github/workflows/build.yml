@@ -88,6 +88,10 @@ jobs:
           SRC="engine/chordpilot.c engine/harmony.c engine/theory.c engine/voicing.c engine/synth.c engine/seq_out.c engine/library.c engine/artists.c engine/refs.c engine/compat.c"
           gcc -O1 -g -fsanitize=address,undefined -std=gnu11 -Iengine $SRC tests_engine/engine_test.c -lm -lpthread -o /tmp/cc_engine_test
           (cd /tmp && ./cc_engine_test | tail -3)
+      - name: Synth test (sound changes under ringing notes, levels, CPU)
+        run: |
+          gcc -O2 -Iengine tests/synth_test.c engine/synth.c -lm -o synth_test
+          ./synth_test
       - name: Configure
         run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCC_BUILD_HOST_TEST=ON -DCC_VST2=ON
       - name: Build

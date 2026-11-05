@@ -106,9 +106,32 @@ static juce::Typeface::Ptr face (int weight)
     return f[juce::jlimit (0, 2, weight)];
 }
 
+static float g_text = 1.25f;
+float textScale() { return g_text; }
+void setTextScale (float s) { g_text = juce::jlimit (0.9f, 1.8f, s); }
+
 juce::Font font (float h, int weight)
 {
-    return juce::Font (juce::FontOptions (face (weight)).withHeight (h));
+    return juce::Font (juce::FontOptions (face (weight)).withHeight (h * g_text));
+}
+
+juce::Colour panelColour (const juce::String& id)
+{
+    // distinct hues, the same lightness: readable on dark and on light themes
+    struct P { const char* id; juce::uint32 c; };
+    static const P cols[] = {
+        { "progression", 0xffe2b866 }, { "ideas", 0xff3ec9b4 }, { "browser", 0xffa98bff }, { "keys", 0xff5aa9ff },
+        { "chord", 0xffff9a4d }, { "groove", 0xff7bd65a }, { "sound", 0xffff6fa8 }, { "pads", 0xffff5c5c },
+        { "history", 0xffb8c2cc }, { "presets", 0xffffd34d }, { "library", 0xff4dd6ff }, { "profile", 0xffd98cff },
+        { "transport", 0xfff2f2f2 }, { "help", 0xff9fe870 },
+    };
+    for (auto& c : cols)
+        if (id == c.id)
+        {
+            auto col = juce::Colour (c.c);
+            return theme() == 2 ? col.darker (0.55f) : col;
+        }
+    return pal().gold;
 }
 
 juce::Image logoImage() { return juce::ImageCache::getFromMemory (BinaryData::logo_big_png, BinaryData::logo_big_pngSize); }
@@ -121,6 +144,8 @@ void fitText (juce::Graphics& g, const juce::String& t, juce::Rectangle<float> r
     if (t.isEmpty() || r.isEmpty()) return;
     g.setColour (c);
     float size = h;
+    minH /= g_text;   // font() scales again
+    if (lines <= 1) size = juce::jmin (size, r.getHeight() * 0.9f / g_text);   // never taller than its box
     if (lines <= 1)
     {
         while (size > minH)

@@ -44,8 +44,11 @@ struct Ctx
     cc::Processor& proc;
     Model model;
     std::vector<Live*> lives;
-    std::function<void (const juce::String&)> hint;   // the help line at the bottom
+    // the helper: what the mouse points at (title + explanation); empty title and text = nothing
+    std::function<void (const juce::String& title, const juce::String& text)> hint;
     std::function<void()> changed;                    // an action happened: refresh now
+    std::function<void (const juce::String& panelId)> popOut;   // open a panel as its own window
+    void help (const juce::String& title, const juce::String& text) { if (hint) hint (title, text); }
 
     int val (const char* k) { return model.val (k); }
     juce::String text (const char* k) { return model.text (k); }
@@ -84,14 +87,15 @@ public:
     void setHelp (const juce::String& h) { help = h; setTooltip (h); }
 
     std::function<void (const juce::MouseEvent&)> onClick, onDouble, onDragStart;
-    std::function<void (const juce::String&)> onHint;
+    std::function<void (const juce::String&, const juce::String&)> onHint;   // title, text
 
     void paint (juce::Graphics&) override;
     void mouseDown (const juce::MouseEvent&) override;
     void mouseUp (const juce::MouseEvent&) override;
     void mouseDrag (const juce::MouseEvent&) override;
     void mouseDoubleClick (const juce::MouseEvent&) override;
-    void mouseEnter (const juce::MouseEvent&) override { if (onHint && help.isNotEmpty()) onHint (help); }
+    void mouseEnter (const juce::MouseEvent&) override { if (onHint && help.isNotEmpty()) onHint (helpTitle.isNotEmpty() ? helpTitle : text, help); }
+    juce::String helpTitle;
 
     juce::String text, sub, badge, help;
     bool on = false, hot = false, dim = false, empty = false;
@@ -113,13 +117,15 @@ public:
     void mouseMove (const juce::MouseEvent&) override;
     void mouseExit (const juce::MouseEvent&) override { hover = -1; repaint(); }
     void setHelp (const juce::String& h) { help = h; setTooltip (h); }
+    void setHelp (const juce::String& t, const juce::String& h) { helpTitle = t; setHelp (h); }
+    juce::String helpTitle;
     juce::Rectangle<float> cell (int i) const;
     int rowsNeeded() const { return cols > 0 ? (labels.size() + cols - 1) / cols : 1; }
 
     std::function<void (int)> onPick;   // default: set the engine value
     juce::StringArray labels;
     juce::String help;
-    float textH = 15.0f;
+    float textH = 17.0f;
 private:
     const char* key;
     int cols, offset, sel = -1, hover = -1;
@@ -182,6 +188,8 @@ public:
     void resized() override;
     std::function<void()> onPicked;   // a CallOutBox closes itself
     void focusSearch() { search.grabKeyboardFocus(); }
+    juce::String help;
+    void mouseEnter (const juce::MouseEvent&) override { ctx.help (title, help); }
 private:
     int getNumRows() override { return (int) rows.size(); }
     void paintListBoxItem (int row, juce::Graphics&, int w, int h, bool selected) override;
@@ -213,6 +221,8 @@ public:
     juce::Colour colour = pal().text;
     bool boxed = true;
     int weight = 1;
+    juce::String helpTitle, help;
+    void mouseEnter (const juce::MouseEvent&) override { if (help.isNotEmpty()) ctx.help (helpTitle, help); }
 private:
     const char* key = nullptr;
     std::function<juce::String()> src;
@@ -241,10 +251,16 @@ class Panel : public juce::Component
 public:
     explicit Panel (const juce::String& t) : title (t) {}
     void paint (juce::Graphics&) override;
+    void mouseDown (const juce::MouseEvent&) override;
+    void mouseMove (const juce::MouseEvent&) override;
     juce::Rectangle<int> content() const;   // inside the frame, below the title
     juce::Rectangle<int> titleBar() const;
-    juce::String title;
+    juce::Rectangle<int> popButton() const;   // the small "open as window" button in the title bar
+    juce::String title, id, about;
+    juce::Colour accent { 0xffe2b866 };
     bool frame = true;
+    std::function<void()> onPopOut;
+    std::function<void (const juce::String&, const juce::String&)> onHint;
 };
 
 // small layout helpers

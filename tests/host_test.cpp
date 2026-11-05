@@ -162,6 +162,21 @@ static void playTest (juce::AudioPluginInstance& p, double sr, int block)
     if (onGrid != groups) { for (double b : starts) std::printf ("%.4f ", b); std::printf ("\n"); }
     CHECK (r.peak > 0.01f && r.peak < 1.0f && ! r.nan, "the synth sounds: peak %.3f, no NaN", r.peak);
 
+    // the sound switched every 250 ms while the progression plays: never a burst (the old synth went to full scale)
+    if (auto* snd = paramNamed (p, "Sound"))
+    {
+        r.peak = 0;
+        r.ph.playing = true;
+        const int steps = snd->getNumSteps();
+        for (int k = 0; k < 2 * steps; ++k)
+        {
+            snd->setValueNotifyingHost ((float) (k % steps) / (float) juce::jmax (1, steps - 1));
+            r.seconds (0.25);
+        }
+        r.ph.playing = false;
+        r.seconds (0.3);
+        CHECK (steps == 16 && r.peak < 0.99f && ! r.nan, "16 sounds, switched under ringing chords: peak %.3f", r.peak);
+    }
     // a MIDI keyboard: pad 1 (note 36) plays chord 1 while held
     r.out.clear();
     r.blocks (1, [] (juce::MidiBuffer& m, int) { m.addEvent (juce::MidiMessage::noteOn (1, 36, (juce::uint8) 100), 17); });

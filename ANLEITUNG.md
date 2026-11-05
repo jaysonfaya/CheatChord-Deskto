@@ -54,6 +54,17 @@ Der eingebaute Synth klingt überall. MIDI OUT des Plugins nehmen nicht alle DAW
 | Entf | Akkord löschen |
 | Strg+Z | Undo |
 | Strg+Y | Redo |
+| H | Helper ein/aus |
+| Esc | EDIT beenden |
+
+## Klang: 16 Instrumente
+
+Der eingebaute Synth ist neu: Electric Piano, Warm Pad, Organ, Synth Keys, Strings, Bell Keys, **Grand Piano**,
+**Wurli**, **Lo-Fi Keys**, **Nylon Guitar**, **Harp**, **Vibraphone**, **Clav**, **Choir**, **Brass**, **Glass Pad**.
+
+- **Ton wechseln ist jetzt sicher:** Eine klingende Note behält ihren Klang bis zum Ende. Neue Noten nehmen den neuen
+  Klang. Am Ausgang sitzt ein Limiter, so kann nichts mehr laut knallen.
+- Die Regler: **TONE** (heller/dunkler), **RELEASE** (wie lange es nachklingt), **SPACE** (Hall).
 
 ## Layouts
 
@@ -61,29 +72,50 @@ Oben **LAYOUT** öffnet das Menü:
 
 | Layout | Wofür |
 |---|---|
-| **Studio** (Standard) | Alles zum Schreiben gleichzeitig: Progression, Ideen, Browser, Tastatur, Rest in Tabs |
-| **Wide** | Grosse und Ultrawide-Bildschirme (ab ca. 2400 px): jedes Panel offen |
-| **Compact** | Laptops und kleine Fenster: Progression oben, alles andere in Tabs |
+| **Studio** | Alles zum Schreiben gleichzeitig: Progression, Ideen, Browser, Tastatur, Rest in Tabs |
+| **Wide** | Grosse und Ultrawide-Bildschirme: fast jedes Panel offen |
+| **Compact** | Laptops und kleine Fenster: Progression oben, alles andere in Tabs (Standard auf kleinen Bildschirmen) |
 | **Perform** | Live spielen: riesige Akkorde und Ideen, grosser Transport |
-| **Discover** | Styles, Artists und Producer erkunden: grosse Listen und das Profil des Artists oder Producers |
+| **Discover** | Styles, Artists und Producer erkunden |
 
-Weitere Einstellungen:
+**In jedem Layout ist alles erreichbar.** Was ein Layout nicht offen zeigt, steht als Tab da. Jedes Panel hat seine eigene
+Farbe, im Tab und im Titel.
 
-- **Zoom** (50–200 %) vergrössert alles. Das Fenster lässt sich zusätzlich an der Ecke ziehen, dann ordnen sich
-  die Panels neu an.
-- **Farben:** Velvet (rot und gold), Graphite oder Daylight (hell).
-- **„Use this layout … for new instances“** merkt sich Layout, Zoom und Farben für neue Instanzen.
-- Layout, Zoom, Tabs und Fenstergrösse werden pro Projekt gespeichert.
+**Selbst anordnen: EDIT** (oben):
 
-**Eigene Layouts:**
+- Ein Panel ziehen verschiebt es, die Ecke unten rechts ändert die Grösse.
+- Ein Panel auf ein anderes ziehen macht sie zu Tabs.
+- **Rechtsklick** (oder **MENU**) auf ein Panel oder einen Tab:
+  - „Give it its own place“ trennt einen Tab heraus.
+  - „Move it as a tab to …“ hängt einen Tab woanders hin.
+  - „Swap places with …“ tauscht zwei Plätze.
+  - „Open as its own window“ öffnet das Panel als Fenster.
+- **DONE** beendet. **RESET LAYOUT** stellt das Original wieder her. **SAVE AS FILE** speichert es als eigenes Layout im
+  LAYOUT-Menü.
+- Dein angepasstes Layout wird mit dem Projekt gespeichert.
 
-1. **„Save this layout as a file to edit…“** schreibt das aktuelle Layout als `.json` nach
-   `Dokumente/JJ DA PLUG/CheatChord/Layouts`.
-2. Die Datei mit einem Texteditor ändern. Panels werden auf ein Raster gesetzt; mehrere Panels an einem Platz
-   werden zu Tabs. Die `README.txt` im Ordner erklärt das Format und listet alle Panel-Namen.
-3. **„Reload layout files“** lädt die Änderung.
+**Eigene Fenster:**
 
-Jedes Layout aus dem Menü wird so ladbar.
+- Der kleine Pfeil-Knopf oben rechts in jedem Panel (oder Doppelklick auf einen Tab) öffnet das Panel als eigenes
+  kleines Fenster.
+- Verschieben am Titel, Grösse an der Ecke, **BACK INTO LAYOUT** schliesst es wieder.
+- So siehst du zum Beispiel SOUND und CHORD gleichzeitig, auch wenn sie im selben Tab-Bereich liegen.
+
+**Grösse:**
+
+- **Zoom** (50–200 %) vergrössert alles.
+- **Text size** (100–180 %, im Zoom- und im LAYOUT-Menü) vergrössert die Schrift und die Zeilen.
+- Das Fenster lässt sich an der Ecke ziehen, die Panels ordnen sich neu.
+- **Farben:** Velvet, Graphite oder Daylight (LAYOUT → Colour theme).
+- „Use this layout … for new instances“ merkt sich alles für neue Instanzen.
+
+## Helper
+
+Der **Helper** ist ein kleines Fenster, das erklärt, worauf die Maus gerade zeigt: Knöpfe, Regler, Listen, Tabs, Panels.
+
+- Am Titel lässt er sich verschieben.
+- **HELPER ON/OFF** oben (oder die Taste **H**, oder das x) schaltet ihn aus und ein.
+- Ist er aus, zeigen sich die Erklärungen wieder als kurze Tooltips.
 
 ## Automation
 

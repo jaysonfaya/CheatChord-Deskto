@@ -25,7 +25,7 @@ static const char *const OPT_55[] = {"maj", "m", "dim", "aug", "sus2", "sus4", "
 static const char *const OPT_56[] = {"Root", "/C", "/C#/Db", "/D", "/D#/Eb", "/E", "/F", "/F#/Gb", "/G", "/G#/Ab", "/A", "/A#/Bb", "/B"};
 static const char *const OPT_57[] = {"Smoothest", "Alt 1", "Alt 2", "Alt 3"};
 static const char *const OPT_58[] = {"Half", "Normal", "Double"};
-static const char *const OPT_59[] = {"E-Piano", "Soft Pad", "Organ", "Synth Keys", "Strings", "Bell Keys"};
+static const char *const OPT_59[] = {"Electric Piano", "Warm Pad", "Organ", "Synth Keys", "Strings", "Bell Keys", "Grand Piano", "Wurli", "Lo-Fi Keys", "Nylon Guitar", "Harp", "Vibraphone", "Clav", "Choir", "Brass", "Glass Pad"};
 static const char *const OPT_63[] = {"Off", "On"};
 static const char *const OPT_69[] = {"Axis Pop", "50s Doo-Wop", "Sad Pop", "Royal Road", "Jazz ii-V-I", "Turnaround", "Neo Soul Descent", "Backdoor", "Mixolydian Rock", "Gospel Walk", "Canon", "Major-Minor IV", "70s Soul Lift", "Chromatic Soul", "Brit Pop Bridge", "Lo-Fi Sway", "R&B Slow Jam", "Andalusian", "Epic Minor", "Deep House", "Dorian Vamp", "Minor ii-V-i", "Line Cliche", "80s Funk Minor", "Dark Trap", "Cinematic Rise"};
 static const char *const OPT_99[] = {"Played", "Fixed"};
@@ -186,7 +186,7 @@ static const ParamMeta PARAMS[] = {
     {"slot_bass", "Bass", 0, 12, 0, 13, OPT_56, 0},
     {"slot_var", "Variation", 0, 3, 0, 4, OPT_57, 0},
     {"slot_len", "Slot Length", 0, 2, 1, 3, OPT_58, 0},
-    {"sound", "Sound", 0, 5, 0, 6, OPT_59, 0},
+    {"sound", "Sound", 0, 15, 0, 16, OPT_59, 0},
     {"tone", "Tone", 0, 100, 50, 0, nullptr, 0},
     {"release", "Release", 0, 100, 35, 0, nullptr, 0},
     {"space", "Space", 0, 100, 30, 0, nullptr, 0},

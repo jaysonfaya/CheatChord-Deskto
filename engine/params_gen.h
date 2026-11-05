@@ -404,7 +404,7 @@ static const pdef_t PDEF[NUM_P] = {
     {"slot_bass", 0, 12, 0, 0},
     {"slot_var", 0, 3, 0, 0},
     {"slot_len", 0, 2, 1, 0},
-    {"sound", 0, 5, 0, 0},
+    {"sound", 0, 15, 0, 0},
     {"tone", 0, 100, 50, 0},
     {"release", 0, 100, 35, 0},
     {"space", 0, 100, 30, 0},
