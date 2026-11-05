@@ -307,7 +307,7 @@ BrowserPanel::BrowserPanel (Ctx& c)
 void BrowserPanel::resized()
 {
     auto r = content();
-    lists = r.getHeight() > U (230) && r.getWidth() > 520;
+    lists = r.getHeight() > U (200) && r.getWidth() > 520;
     style.setVisible (lists); artist.setVisible (lists); producer.setVisible (lists);
     styleP.setVisible (! lists); artistP.setVisible (! lists); producerP.setVisible (! lists);
 

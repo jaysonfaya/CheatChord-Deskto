@@ -10,12 +10,12 @@ R"JSON({
   "about": "Everything for writing at once: progression, ideas, browser, keys, the rest in tabs.",
   "size": [1600, 1000], "min": [1200, 760], "grid": [60, 40],
   "panels": [
-    { "id": "progression", "at": [0, 0, 60, 10] },
-    { "id": "ideas",       "at": [0, 10, 17, 16] },
-    { "id": "browser",     "at": [17, 10, 25, 16] },
-    { "tabs": ["history", "presets", "library", "profile"], "at": [42, 10, 18, 16] },
-    { "id": "keys",        "at": [0, 26, 25, 14] },
-    { "tabs": ["chord", "groove", "sound", "pads", "transport", "help"], "at": [25, 26, 35, 14] }
+    { "id": "progression", "at": [0, 0, 60, 9] },
+    { "id": "ideas",       "at": [0, 9, 17, 15] },
+    { "id": "browser",     "at": [17, 9, 25, 15] },
+    { "tabs": ["history", "presets", "library", "profile"], "at": [42, 9, 18, 15] },
+    { "id": "keys",        "at": [0, 24, 22, 16] },
+    { "tabs": ["chord", "groove", "sound", "pads", "transport", "help"], "at": [22, 24, 38, 16] }
   ]
 })JSON",
 R"JSON({
