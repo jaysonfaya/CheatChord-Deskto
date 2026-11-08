@@ -89,6 +89,7 @@ juce_add_binary_data (CheatChordData SOURCES
 
 target_sources (CheatChord PRIVATE
     plugin/CCEngine.cpp
+    plugin/MidiPort.cpp
     plugin/PluginProcessor.cpp
     plugin/PluginEditor.cpp
     plugin/ui/Theme.cpp
@@ -139,4 +140,10 @@ if (CC_BUILD_HOST_TEST)
     target_include_directories (cc_ui_shots PRIVATE $<TARGET_PROPERTY:CheatChord,INCLUDE_DIRECTORIES>)
     target_compile_definitions (cc_ui_shots PRIVATE $<TARGET_PROPERTY:CheatChord,COMPILE_DEFINITIONS>)
     target_link_libraries (cc_ui_shots PRIVATE CheatChord)
+
+    juce_add_console_app (cc_port_test PRODUCT_NAME "cc_port_test")
+    target_sources (cc_port_test PRIVATE tests/port_test.cpp)
+    target_include_directories (cc_port_test PRIVATE $<TARGET_PROPERTY:CheatChord,INCLUDE_DIRECTORIES>)
+    target_compile_definitions (cc_port_test PRIVATE $<TARGET_PROPERTY:CheatChord,COMPILE_DEFINITIONS>)
+    target_link_libraries (cc_port_test PRIVATE CheatChord)
 endif ()

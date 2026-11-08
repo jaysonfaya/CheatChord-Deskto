@@ -605,8 +605,18 @@ void GroovePanel::paint (juce::Graphics& g)
 SoundPanel::SoundPanel (Ctx& c)
     : Panel ("Sound & MIDI out"), ctx (c), sound (c, "sound", {}, 4), midiOut (c, "midi_out", { "OFF", "ON" }, 2), synth (c, "synth", { "OFF", "ON" }, 2),
       level (c, "level", "Level", pct), tone (c, "tone", "Tone", pct), release (c, "release", "Release", pct), space (c, "space", "Space", pct),
-      channel (c, "channel", "Chord channel"), bassCh (c, "bass_ch", "Bass channel"), port (c, "port", 13.0f)
+      channel (c, "channel", "Chord channel"), bassCh (c, "bass_ch", "Bass channel"),
+      port (c, [&c] { return c.proc.midiPort().status(); }, 14.0f, juce::Justification::centredLeft, 2)
 {
+    portBtn.helpTitle = "CheatChord MIDI port";
+    portBtn.setHelp ("Sends the chords out of CheatChord as its own MIDI device. In your DAW (MPC, Ableton...), set the MIDI input "
+                     "of another track to \"CheatChord\" and that track plays and records every note of the chords. "
+                     "Mac: works right away. Windows: install the free loopMIDI once (it brings the driver for the port). "
+                     "Set the CheatChord track's own MIDI input to your keyboard, not to \"All\".");
+    portBtn.set ("MIDI PORT...");
+    portBtn.onClick = [this] (const juce::MouseEvent&) { portMenu(); };
+    port.helpTitle = portBtn.helpTitle;
+    port.help = portBtn.help;
     channel.options = nums (1, 16, "CH ");
     channel.offset = 1;
     bassCh.options = nums (1, 16, "CH ");
@@ -617,8 +627,31 @@ SoundPanel::SoundPanel (Ctx& c)
     panic.set ("ALL NOTES OFF");
     panic.onClick = [this] (const juce::MouseEvent&) { ctx.tap ("panic"); };
     port.colour = pal().dim;
-    for (auto* x : std::initializer_list<juce::Component*> { &sound, &midiOut, &synth, &level, &tone, &release, &space, &channel, &bassCh, &panic, &port })
+    hintAll (ctx, { &portBtn, &panic });
+    for (auto* x : std::initializer_list<juce::Component*> { &sound, &midiOut, &synth, &level, &tone, &release, &space, &channel, &bassCh, &panic, &port, &portBtn })
         addAndMakeVisible (x);
+}
+
+void SoundPanel::portMenu()
+{
+    auto& mp = ctx.proc.midiPort();
+    const auto ch = mp.choices();
+    juce::PopupMenu m;
+    m.addSectionHeader ("CHEATCHORD MIDI PORT");
+    for (size_t i = 0; i < ch.size(); ++i)
+    {
+        if (i == 2) m.addSeparator();
+        m.addItem ((int) i + 1, ch[i].name, true, ch[i].id == mp.selected());
+    }
+    juce::Component::SafePointer<SoundPanel> safe (this);
+    m.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (&portBtn).withStandardItemHeight (U (26)), [safe, ch] (int r)
+    {
+        if (safe == nullptr || r <= 0 || r > (int) ch.size()) return;
+        if (ch[(size_t) r - 1].id.isNotEmpty() && safe->ctx.val ("midi_out") == 0) safe->ctx.setValue ("midi_out", 1);
+        safe->ctx.proc.selectMidiPort (ch[(size_t) r - 1].id);
+        safe->ctx.help ("CheatChord MIDI port", safe->ctx.proc.midiPort().status());
+        if (safe->ctx.changed) safe->ctx.changed();
+    });
 }
 
 void SoundPanel::resized()
@@ -643,10 +676,12 @@ void SoundPanel::resized()
         auto c = take (r, U (54), 10);
         channel.setBounds (takeLeft (c, (c.getWidth() - 10) / 2, 10));
         bassCh.setBounds (c);
+        auto e = take (r, U (40), 8);
+        portBtn.setBounds (e.removeFromLeft (juce::jmin (U (230), e.getWidth() / 2)));
+        e.removeFromLeft (U (8));
+        port.setBounds (e);
         auto d = take (r, U (34), 0);
         panic.setBounds (d.removeFromRight (juce::jmin (U (170), d.getWidth() / 2)));
-        d.removeFromRight (U (8));
-        port.setBounds (d);
     }
     else
     {
@@ -663,10 +698,12 @@ void SoundPanel::resized()
         auto c = take (r, U (50), 8);
         channel.setBounds (takeLeft (c, (c.getWidth() - 10) / 2, 10));
         bassCh.setBounds (c);
+        auto e = take (r, U (38), 8);
+        portBtn.setBounds (e.removeFromLeft (juce::jmin (U (210), e.getWidth() / 2)));
+        e.removeFromLeft (U (8));
+        port.setBounds (e);
         auto d = take (r, U (30), 0);
         panic.setBounds (d.removeFromRight (U (160)));
-        d.removeFromRight (U (8));
-        port.setBounds (d);
     }
     repaint();
 }

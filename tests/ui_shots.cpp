@@ -86,6 +86,7 @@ int main (int argc, char** argv)
     ed->setTextSize (1.5f);
     shot (*ed, out.getChildFile ("studio_text150.png"));
     ed->setTextSize (1.25f);
+    shot (*ed, out.getChildFile ("sound_panel.png"));
     ed->setZoom (0.8f);
     ed->setSize (1280, 800);
     shot (*ed, out.getChildFile ("studio_80pct.png"));

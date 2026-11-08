@@ -109,6 +109,29 @@ Farbe, im Tab und im Titel.
 - **Farben:** Velvet, Graphite oder Daylight (LAYOUT → Colour theme).
 - „Use this layout … for new instances“ merkt sich alles für neue Instanzen.
 
+## Eigener MIDI-Port: die Akkorde als MIDI-Eingang einer Spur
+
+CheatChord kann seine Akkorde als **eigenes MIDI-Gerät** ausgeben. Dann wählst du in jeder DAW bei einer anderen Spur
+**MIDI-Eingang: CheatChord**, und diese Spur spielt und nimmt jede Note der Akkorde auf. Das geht auch in der MPC und
+in Ableton, die den MIDI-Ausgang eines Plugins sonst nicht annehmen.
+
+1. **Nur Windows, einmalig:** das kostenlose **loopMIDI** von Tobias Erichsen installieren (tobias-erichsen.de). Es
+   bringt den Treiber mit, über den CheatChord seinen Port anlegt. Einen Port in loopMIDI selbst brauchst du nicht.
+   Auf dem Mac geht es ohne Installation.
+2. In CheatChord: **SOUND → MIDI PORT… → CheatChord (own port)**. Die Zeile daneben zeigt „Open“. Statt des eigenen
+   Ports kannst du auch einen vorhandenen MIDI-Ausgang wählen, etwa einen loopMIDI-Port oder dein Interface.
+3. In der DAW: eine neue MIDI- oder Instrument-Spur, Programm oder Instrument laden, **MIDI-Eingang = CheatChord**,
+   Monitor/Aufnahme scharf.
+   - **MPC:** Bei der Ziel-Spur unter MIDI-Eingang „CheatChord“ wählen, unter Preferences → MIDI den Port aktivieren.
+   - **Ableton:** Einstellungen → Link/Tempo/MIDI: beim Eingang „CheatChord“ **Spur** einschalten. Dann bei der Spur
+     „MIDI From: CheatChord“ und Monitor „In“.
+4. **Wichtig:** Die CheatChord-Spur selbst bekommt als MIDI-Eingang nur dein Keyboard oder deine Pads, nicht „Alle
+   Eingänge“. Sonst kommen die Akkorde wieder zurück. CheatChord filtert solche Echos zwar heraus, aber so bleibt es
+   sauber.
+
+Willst du nur den Klang des fremden Instruments, stell in CheatChord **SYNTH WITH MIDI** aus.
+Mehrere CheatChord-Instanzen bekommen je einen eigenen Port („CheatChord 2“ usw.).
+
 ## Helper
 
 Der **Helper** ist ein kleines Fenster, das erklärt, worauf die Maus gerade zeigt: Knöpfe, Regler, Listen, Tabs, Panels.

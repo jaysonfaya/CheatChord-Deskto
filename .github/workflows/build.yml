@@ -102,6 +102,10 @@ jobs:
         run: |
           gcc -O1 -o vst2_test tests/vst2_test.c -ldl -lm
           xvfb-run -a ./vst2_test build/CheatChord_artefacts/Release/VST/libCheatChord.so
+      - name: MIDI port test (whole chords arrive at a track listening to the CheatChord port)
+        run: |
+          sudo modprobe snd-seq || true
+          xvfb-run -a build/cc_port_test_artefacts/Release/cc_port_test
       - name: Screenshots of every layout
         run: xvfb-run -a -s "-screen 0 2560x1440x24" build/cc_ui_shots_artefacts/Release/cc_ui_shots shots
       - name: Pack

@@ -187,12 +187,14 @@ void Processor::process (juce::AudioBuffer<F>& buffer, juce::MidiBuffer& midi)
 
     float* L = scratchL.data();
     float* R = scratchR.data();
+    const double nowMs = juce::Time::getMillisecondCounterHiRes();
     auto it = midi.cbegin();
     const auto end = midi.cend();
     auto feed = [&] (const juce::MidiMessage& m)
     {
         if (m.isNoteOnOrOff())
         {
+            if (port.isEcho (m.getNoteNumber(), m.isNoteOn(), nowMs)) return;   // our own port, routed back in
             const uint8_t* d = m.getRawData();
             uint8_t raw[3] = { d[0], d[1], (uint8_t) (m.getRawDataSize() > 2 ? d[2] : 0) };
             if (m.isNoteOff()) raw[0] = (uint8_t) (0x80 | (raw[0] & 15));
@@ -223,7 +225,8 @@ void Processor::process (juce::AudioBuffer<F>& buffer, juce::MidiBuffer& midi)
         feed ((*it).getMessage());
     sinkBase = 0;
 
-    // the notes sent in this block replace the input (an instrument consumes what it plays)
+    // the notes sent in this block replace the input (an instrument consumes what it plays); the own port gets them too
+    toPort (outMidi, nowMs);
     midi.swapWith (outMidi);
     outMidi.clear();
     g.unlock();
@@ -270,8 +273,26 @@ void Processor::pumpIfIdle()
         cc_render_float (eng.raw(), l, r, len);
         frames -= len;
     }
-    if (outMidi.getNumEvents() > 4096)
-        outMidi.clear();
+    // nobody plays this buffer while the host is idle: the own port still gets the notes (clicks, pads, LISTEN)
+    toPort (outMidi, juce::Time::getMillisecondCounterHiRes());
+    outMidi.clear();
+}
+
+void Processor::toPort (const juce::MidiBuffer& m, double baseMs)
+{
+    if (! port.active()) return;
+    for (const auto ev : m)
+    {
+        const auto* d = ev.data;
+        if (ev.numBytes >= 1 && ev.numBytes <= 3)
+            port.push (baseMs + ev.samplePosition * 1000.0 / sr, d[0], ev.numBytes > 1 ? d[1] : 0, ev.numBytes > 2 ? d[2] : 0);
+    }
+}
+
+void Processor::selectMidiPort (const juce::String& id)
+{
+    port.select (id);
+    ui.setProperty ("midiPort", id, nullptr);
 }
 
 void Processor::timerCallback()
@@ -409,6 +430,12 @@ void Processor::setStateInformation (const void* data, int sizeInBytes)
     if (auto* u = xml->getChildByName ("UI"))
         ui = juce::ValueTree::fromXml (*u);
     syncParamsFromEngine();
+    const auto want = ui.getProperty ("midiPort", "").toString();
+    if (want != port.selected())
+        juce::MessageManager::callAsync ([safe = juce::WeakReference<Processor> (this), want]
+        {
+            if (auto* p = safe.get()) p->port.select (want);
+        });
 }
 
 juce::File Processor::writeDragMidi (juce::String& msg)

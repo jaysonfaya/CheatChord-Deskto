@@ -109,8 +109,10 @@ private:
     Knob level, tone, release, space;
     Picker channel, bassCh;
     Tile panic { Tile::Action };
+    Tile portBtn { Tile::Primary };
     Line port;
     juce::Rectangle<int> labs[4];
+    void portMenu();
 };
 
 class PadsPanel : public Panel

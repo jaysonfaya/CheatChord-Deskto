@@ -7,6 +7,7 @@
 #include <set>
 #include <string>
 #include "CCEngine.h"
+#include "MidiPort.h"
 
 namespace cc {
 
@@ -62,6 +63,9 @@ public:
     // write the progression as a .mid for drag and drop; returns the file (or an empty File)
     juce::File writeDragMidi (juce::String& msg);
     double lastBpm() const noexcept { return bpm.load(); }
+    // the plugin's own MIDI port (a track's MIDI input in any DAW)
+    MidiPort& midiPort() noexcept { return port; }
+    void selectMidiPort (const juce::String& id);
     bool hostPlaying() const noexcept { return playingNow.load(); }
 
 private:
@@ -72,6 +76,8 @@ private:
     static void midiSink (void* ctx, int offset, uint8_t st, uint8_t d1, uint8_t d2);
 
     Engine eng;
+    MidiPort port;
+    void toPort (const juce::MidiBuffer& m, double baseMs);
     std::vector<std::unique_ptr<HostParam>> hostParams;
     std::atomic<int> uiWriting { 0 };
     std::set<std::string> inGesture;   // message thread
@@ -88,6 +94,7 @@ private:
     std::vector<float> scratchL, scratchR;
     int64_t idleMs = 0;
 
+    JUCE_DECLARE_WEAK_REFERENCEABLE (Processor)
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Processor)
 };
 
