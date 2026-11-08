@@ -38,13 +38,15 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit 1 }
 
   macos:
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
       - name: "Configure (Universal - Apple Silicon + Intel)"
-        run: cmake -S . -B build -G Xcode -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCC_VST2=ON
+        run: cmake -S . -B build -G Xcode -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCC_VST2=ON -DCC_BUILD_HOST_TEST=ON
       - name: Build
         run: cmake --build build --config Release --parallel 4
+      - name: MIDI port test (CoreMIDI - whole chords arrive at a track listening to the CheatChord port)
+        run: build/cc_port_test_artefacts/Release/cc_port_test
       - name: Sign (ad hoc) and pack
         run: |
           mkdir -p dist/CheatChord-macOS
