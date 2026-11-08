@@ -56,6 +56,9 @@ jobs:
           cp -R build/CheatChord_artefacts/Release/Standalone/CheatChord.app dist/CheatChord-macOS/
           for b in dist/CheatChord-macOS/*.vst3 dist/CheatChord-macOS/*.vst dist/CheatChord-macOS/*.component dist/CheatChord-macOS/*.app; do codesign --force --deep -s - "$b"; done
           cp INSTALL.txt ANLEITUNG.md dist/CheatChord-macOS/
+          mkdir -p ~/Applications
+          cp "tools/mac/CheatChord installieren.command" dist/CheatChord-macOS/
+          chmod +x "dist/CheatChord-macOS/CheatChord installieren.command"
           cd dist && ditto -c -k --keepParent CheatChord-macOS CheatChord-macOS.zip
       - uses: actions/upload-artifact@v4
         with:

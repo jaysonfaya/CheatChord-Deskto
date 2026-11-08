@@ -19,6 +19,10 @@ Standalone:  CheatChord.exe  runs without a DAW (pick an audio and MIDI device u
 
 MACOS (Apple Silicon and Intel)
 -------------------------------
+EASIEST: double-click "CheatChord installieren.command". It copies everything and removes the download block.
+If macOS blocks the script: System Settings > Privacy & Security > "Open Anyway", then double-click again.
+
+By hand:
   CheatChord.vst3        ->  ~/Library/Audio/Plug-Ins/VST3/
   CheatChord.component   ->  ~/Library/Audio/Plug-Ins/Components/   (Logic, GarageBand, MPC 2 on Mac)
   CheatChord.vst         ->  ~/Library/Audio/Plug-Ins/VST/          (MPC 2 on Mac, older hosts)
