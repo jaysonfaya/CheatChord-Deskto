@@ -14,10 +14,12 @@ ditto "$SRC/CheatChord.app" "$R/Applications/CheatChord.app"
 pkgbuild --analyze --root "$R" "$W/comp.plist"
 i=0
 while /usr/libexec/PlistBuddy -c "Print :$i" "$W/comp.plist" >/dev/null 2>&1; do
-  /usr/libexec/PlistBuddy -c "Set :$i:BundleIsRelocatable false" "$W/comp.plist"
+  /usr/libexec/PlistBuddy -c "Delete :$i:BundleIsRelocatable" "$W/comp.plist" 2>/dev/null || true
+  /usr/libexec/PlistBuddy -c "Add :$i:BundleIsRelocatable bool false" "$W/comp.plist"
   /usr/libexec/PlistBuddy -c "Set :$i:BundleOverwriteAction upgrade" "$W/comp.plist" 2>/dev/null || true
   i=$((i+1))
 done
+echo "bundles in the package: $i"; /usr/libexec/PlistBuddy -c "Print" "$W/comp.plist" | grep -E "RootRelativeBundlePath|Relocatable"
 pkgbuild --root "$R" --component-plist "$W/comp.plist" --scripts "$HERE/pkg/scripts" \
   --identifier com.jjdaplug.cheatchord --version 4.1.0 --install-location / "$W/CheatChord-core.pkg"
 pkgutil --payload-files "$W/CheatChord-core.pkg" | grep -E "CheatChord\.(vst3|component|vst|app)$"
