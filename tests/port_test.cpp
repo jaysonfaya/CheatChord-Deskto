@@ -35,7 +35,10 @@ int main()
     std::unique_ptr<cc::Processor> p (dynamic_cast<cc::Processor*> (createPluginFilter()));
     p->setPlayConfigDetails (0, 2, 48000, 256);
     p->prepareToPlay (48000, 256);
+    // a host that resets every parameter to its default (some do on load) must leave the chords on
+    for (auto* q : p->getParameters()) q->setValueNotifyingHost (q->getDefaultValue());
     blocks (*p, 200);
+    if (p->engine().getIntU ("midi_out") != 1) { std::printf ("FAIL: the host defaults switch MIDI Out off\n"); return 1; }
     p->selectMidiPort ("virtual");
     std::printf ("port: %s\n", p->midiPort().status().toRawUTF8());
     if (! p->midiPort().active()) { std::printf ("SKIPPED (no MIDI system here)\n"); return 0; }
@@ -59,7 +62,7 @@ int main()
     const bool ok = l.ons >= 3 && together >= 3 && l.ons == l.offs;
     std::printf ("%s port %s: %d note-ons, %d at once, %d note-offs\n", ok ? "PASSED" : "FAIL", found.name.toRawUTF8(),
                  l.ons.load(), together, l.offs.load());
-    p->selectMidiPort ("");
+    p->selectMidiPort ("off");
     p->releaseResources();
     return ok ? 0 : 1;
 }

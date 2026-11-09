@@ -15,7 +15,7 @@ public:
     MidiPort();
     ~MidiPort() override;
 
-    struct Choice { juce::String id, name; };   // id "" = off, "virtual" = own port, else a device identifier
+    struct Choice { juce::String id, name; };   // id "off" (or "") = off, "virtual" = own port, else a device identifier
     std::vector<Choice> choices() const;
     void select (const juce::String& id);       // message thread
     juce::String selected() const { return current; }
@@ -25,7 +25,7 @@ public:
     // audio thread: a message at a time in milliseconds (Time::getMillisecondCounterHiRes)
     void push (double atMs, juce::uint8 a, juce::uint8 b, juce::uint8 c) noexcept;
     // input notes that are our own (the port routed back into the CheatChord track) are dropped (audio thread)
-    bool isEcho (int note, bool on, double nowMs) noexcept;
+    bool isEcho (int ch, int note, int vel, bool on, double nowMs) noexcept;
     static bool virtualPossible();               // can make a port named "CheatChord" here
 
 private:
@@ -42,7 +42,9 @@ private:
     std::atomic<bool> isOpen { false };
     juce::CriticalSection sendLock;
     // echo guard: notes sent recently
-    double sentOn[128] {}, sentOff[128] {};
+    double sentOn[128] {};
+    int sentKey[128] {};   // channel << 7 | velocity of the last note-on sent
+    int nameSlot = 0;
     // what really went out (for the status line): notes, the most at once, echoes dropped
     std::atomic<int> nOn { 0 }, maxAtOnce { 0 }, nEcho { 0 };
     int held[16][128] {};

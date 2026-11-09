@@ -49,10 +49,17 @@ Processor::Processor()
         hp->key = m->key;
         hp->trigger = false;
         juce::ParameterID id { m->key, version };
+        // the default a host resets to is the desktop start value (MIDI Out on, channel 1, piano), not the MPC one:
+        // a host that pushes the defaults into a new instance must not switch the chords off
+        int def = m->def;
+        {
+            std::lock_guard<std::mutex> g (eng.mutex());
+            def = eng.getIntU (m->key);
+        }
         if (m->nopt > 0)
-            hp->p = new juce::AudioParameterChoice (id, hostName (*m), optionNames (*m), juce::jlimit (0, m->nopt - 1, m->def));
+            hp->p = new juce::AudioParameterChoice (id, hostName (*m), optionNames (*m), juce::jlimit (0, m->nopt - 1, def));
         else
-            hp->p = new juce::AudioParameterInt (id, hostName (*m), m->min, m->max, juce::jlimit (m->min, m->max, m->def));
+            hp->p = new juce::AudioParameterInt (id, hostName (*m), m->min, m->max, juce::jlimit (m->min, m->max, def));
         addParameter (hp->p);
         hostParams.push_back (std::move (hp));
     }
@@ -194,7 +201,7 @@ void Processor::process (juce::AudioBuffer<F>& buffer, juce::MidiBuffer& midi)
     {
         if (m.isNoteOnOrOff())
         {
-            if (port.isEcho (m.getNoteNumber(), m.isNoteOn(), nowMs)) return;   // our own port, routed back in
+            if (port.isEcho (m.getChannel() - 1, m.getNoteNumber(), (int) m.getVelocity(), m.isNoteOn(), nowMs)) return;   // our own port, routed back in
             const uint8_t* d = m.getRawData();
             uint8_t raw[3] = { d[0], d[1], (uint8_t) (m.getRawDataSize() > 2 ? d[2] : 0) };
             if (m.isNoteOff()) raw[0] = (uint8_t) (0x80 | (raw[0] & 15));
@@ -291,12 +298,21 @@ void Processor::toPort (const juce::MidiBuffer& m, double baseMs)
 
 void Processor::selectMidiPort (const juce::String& id)
 {
+    portDecided = true;
     port.select (id);
     ui.setProperty ("midiPort", id, nullptr);
 }
 
 void Processor::timerCallback()
 {
+    // the own port opens by itself once the DAW really plays this instance (not while it only scans the plugin):
+    // a track can then take "CheatChord" as its MIDI input without anything set here. A saved choice wins.
+    if (! portDecided && juce::Time::currentTimeMillis() - lastProcessMs.load() < 1000)
+    {
+        portDecided = true;
+        if (MidiPort::virtualPossible())
+            port.select ("virtual");
+    }
     // values the engine changed by itself (a preset, an artist bringing its style, LISTEN ending...) go to the host
     std::vector<std::pair<HostParam*, int>> changes;
     ++uiWriting;
@@ -431,6 +447,8 @@ void Processor::setStateInformation (const void* data, int sizeInBytes)
         ui = juce::ValueTree::fromXml (*u);
     syncParamsFromEngine();
     const auto want = ui.getProperty ("midiPort", "").toString();
+    if (want.isEmpty()) return;   // never chosen: the own port opens by itself (timerCallback)
+    portDecided = true;
     if (want != port.selected())
         juce::MessageManager::callAsync ([safe = juce::WeakReference<Processor> (this), want]
         {

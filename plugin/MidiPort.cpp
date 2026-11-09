@@ -35,7 +35,9 @@ namespace te
 }
 #endif
 
-static std::atomic<int> instances { 0 };
+// port names in use in this process: "CheatChord", "CheatChord 2"... (a closed one frees its name)
+static juce::CriticalSection namesLock;
+static bool nameUsed[17] {};
 
 bool MidiPort::virtualPossible()
 {
@@ -46,19 +48,18 @@ bool MidiPort::virtualPossible()
 #endif
 }
 
-MidiPort::MidiPort() : juce::Thread ("CheatChord MIDI port") { ++instances; }
+MidiPort::MidiPort() : juce::Thread ("CheatChord MIDI port") {}
 
 MidiPort::~MidiPort()
 {
     stopThread (500);
     closeAll();
-    --instances;
 }
 
 std::vector<MidiPort::Choice> MidiPort::choices() const
 {
     std::vector<Choice> v;
-    v.push_back ({ "", "Off" });
+    v.push_back ({ "off", "Off" });
     v.push_back ({ "virtual", virtualPossible() ? "CheatChord (own port)" : "CheatChord (own port: install loopMIDI first)" });
     for (auto& d : juce::MidiOutput::getAvailableDevices())
         if (! d.name.startsWithIgnoreCase ("CheatChord"))
@@ -75,6 +76,7 @@ void MidiPort::closeAll()
     if (te != nullptr && te::close != nullptr) te::close (te);
 #endif
     te = nullptr;
+    if (nameSlot > 0) { const juce::ScopedLock nl (namesLock); nameUsed[nameSlot] = false; nameSlot = 0; }
 }
 
 void MidiPort::select (const juce::String& id)
@@ -84,27 +86,41 @@ void MidiPort::select (const juce::String& id)
     current = id;
     err = {};
     portName = {};
-    if (id.isEmpty()) return;
+    if (id.isEmpty() || id == "off") return;
     if (id == "virtual")
     {
-        const int n = instances.load();
-        portName = n > 1 ? "CheatChord " + juce::String (n) : juce::String ("CheatChord");
 #if JUCE_WINDOWS
         if (! te::load())
         {
             err = "Windows needs the free loopMIDI driver for an own port: install loopMIDI (tobias-erichsen.de), then choose this again.";
             return;
         }
-        te = te::create (portName.toWideCharPointer(), te::ignore, 0, 256, te::PARSE_TX);
-        if (te == nullptr)
-        {
-            err = "The port could not be made (error " + juce::String ((int) GetLastError()) + ").";
-            return;
-        }
-#else
-        out = juce::MidiOutput::createNewDevice (portName);
-        if (out == nullptr) { err = "The port could not be made."; return; }
 #endif
+        for (int k = 1; k <= 16 && ! (te != nullptr || out != nullptr); ++k)
+        {
+            {
+                const juce::ScopedLock nl (namesLock);
+                if (nameUsed[k]) continue;
+                nameUsed[k] = true;
+            }
+            nameSlot = k;
+            portName = k > 1 ? "CheatChord " + juce::String (k) : juce::String ("CheatChord");
+#if JUCE_WINDOWS
+            te = te::create (portName.toWideCharPointer(), te::ignore, 0, 256, te::PARSE_TX);
+            if (te == nullptr) err = "The port could not be made (error " + juce::String ((int) GetLastError()) + ").";
+#else
+            out = juce::MidiOutput::createNewDevice (portName);
+            if (out == nullptr) err = "The port could not be made.";
+#endif
+            if (te == nullptr && out == nullptr)
+            {
+                const juce::ScopedLock nl (namesLock);
+                nameUsed[k] = false;   // another program may hold this name: try the next one
+                nameSlot = 0;
+            }
+        }
+        if (te == nullptr && out == nullptr) return;
+        err = {};
     }
     else
     {
@@ -122,7 +138,7 @@ void MidiPort::select (const juce::String& id)
 juce::String MidiPort::status() const
 {
     if (err.isNotEmpty()) return err;
-    if (! isOpen.load()) return current.isEmpty() ? "Off: the chords go to the DAW's own MIDI routing only." : "Not open.";
+    if (! isOpen.load()) return current.isEmpty() || current == "off" ? "Off: the chords go to the DAW's own MIDI routing only." : "Not open.";
     juce::String t = "Open: in your DAW, set a track's MIDI input to \"" + portName + "\".";
     if (nOn.load() > 0)
         t << "  Sent " << nOn.load() << " notes, up to " << maxAtOnce.load() << " at once"
@@ -134,8 +150,7 @@ void MidiPort::push (double atMs, juce::uint8 a, juce::uint8 b, juce::uint8 c) n
 {
     if (! isOpen.load()) return;
     const int st = a & 0xf0;
-    if (st == 0x90 && c > 0) sentOn[b & 127] = atMs;
-    else if (st == 0x80 || st == 0x90) sentOff[b & 127] = atMs;
+    if (st == 0x90 && c > 0) { sentOn[b & 127] = atMs; sentKey[b & 127] = (int) ((a & 15) << 7 | (c & 127)); }
     int s1, n1, s2, n2;
     fifo.prepareToWrite (1, s1, n1, s2, n2);
     if (n1 + n2 < 1) return;   // full: drop rather than block the audio thread
@@ -145,11 +160,14 @@ void MidiPort::push (double atMs, juce::uint8 a, juce::uint8 b, juce::uint8 c) n
     fifo.finishedWrite (1);
 }
 
-bool MidiPort::isEcho (int note, bool on, double nowMs) noexcept
+bool MidiPort::isEcho (int ch, int note, int vel, bool on, double nowMs) noexcept
 {
     if (! isOpen.load() || note < 0 || note > 127) return false;
-    // our own note coming back within half a second (the track listens to "All inputs", or to this port)
-    if (on && sentOn[note] > 0 && nowMs - sentOn[note] < 500.0 && nowMs - sentOn[note] > -50.0)
+    // our own note coming back (the CheatChord track listens to "All inputs", or to this port): the same note on the
+    // same channel with the same velocity, a moment after we sent it. A pad hit is not taken for one: it comes on its
+    // own channel and velocity, and a real loop comes back within a few audio blocks.
+    if (on && sentOn[note] > 0 && sentKey[note] == ((ch & 15) << 7 | (vel & 127))
+        && nowMs - sentOn[note] < 250.0 && nowMs - sentOn[note] > -50.0)
     {
         ++dropOff[note];
         ++nEcho;

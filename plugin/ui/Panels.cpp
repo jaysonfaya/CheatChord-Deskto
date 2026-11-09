@@ -647,7 +647,7 @@ void SoundPanel::portMenu()
     m.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (&portBtn).withStandardItemHeight (U (26)), [safe, ch] (int r)
     {
         if (safe == nullptr || r <= 0 || r > (int) ch.size()) return;
-        if (ch[(size_t) r - 1].id.isNotEmpty() && safe->ctx.val ("midi_out") == 0) safe->ctx.setValue ("midi_out", 1);
+        if (ch[(size_t) r - 1].id != "off" && safe->ctx.val ("midi_out") == 0) safe->ctx.setValue ("midi_out", 1);
         safe->ctx.proc.selectMidiPort (ch[(size_t) r - 1].id);
         safe->ctx.help ("CheatChord MIDI port", safe->ctx.proc.midiPort().status());
         if (safe->ctx.changed) safe->ctx.changed();

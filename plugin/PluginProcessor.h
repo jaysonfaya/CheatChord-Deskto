@@ -90,6 +90,7 @@ private:
     std::atomic<double> bpm { 120.0 };
     std::atomic<bool> playingNow { false };
     std::atomic<juce::int64> lastProcessMs { 0 };
+    bool portDecided = false;   // message thread: the port was chosen (by the user or a saved session) or opened by itself
     juce::String lastCycle;
     std::vector<float> scratchL, scratchR;
     int64_t idleMs = 0;

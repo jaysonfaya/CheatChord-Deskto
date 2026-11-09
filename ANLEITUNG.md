@@ -118,11 +118,17 @@ in Ableton, die den MIDI-Ausgang eines Plugins sonst nicht annehmen.
 1. **Nur Windows, einmalig:** das kostenlose **loopMIDI** von Tobias Erichsen installieren (tobias-erichsen.de). Es
    bringt den Treiber mit, über den CheatChord seinen Port anlegt. Einen Port in loopMIDI selbst brauchst du nicht.
    Auf dem Mac geht es ohne Installation.
-2. In CheatChord: **SOUND → MIDI PORT… → CheatChord (own port)**. Die Zeile daneben zeigt „Open“. Statt des eigenen
-   Ports kannst du auch einen vorhandenen MIDI-Ausgang wählen, etwa einen loopMIDI-Port oder dein Interface.
+2. CheatChord öffnet den Port **von selbst**, sobald die DAW das Plugin abspielt. In **SOUND → MIDI PORT** steht dann
+   „Open“. Dort kannst du ihn auch ausschalten oder statt des eigenen Ports einen vorhandenen MIDI-Ausgang wählen
+   (etwa einen loopMIDI-Port oder dein Interface). Die Zeile zeigt, wie viele Noten rausgingen und wie viele davon
+   gleichzeitig: bei Akkorden 3 oder mehr.
 3. In der DAW: eine neue MIDI- oder Instrument-Spur, Programm oder Instrument laden, **MIDI-Eingang = CheatChord**,
    Monitor/Aufnahme scharf.
-   - **MPC:** Bei der Ziel-Spur unter MIDI-Eingang „CheatChord“ wählen, unter Preferences → MIDI den Port aktivieren.
+   - **MPC:** Spur 1 = CheatChord (Plugin-Programm). Spur 2 = neues Keygroup- oder Plugin-Programm (kein Drum-
+     Programm). Bei Spur 2 als MIDI-Eingang „CheatChord“ und Monitoring „In“ bzw. „Merge“ statt „Auto“ (mit „Auto“
+     hört eine Spur nur zu, solange sie ausgewählt ist). Unter Preferences → MIDI den Eingang „CheatChord“
+     aktivieren; erscheint er dort nicht, die MPC einmal neu starten, nachdem CheatChord geladen ist. Dann Spur 1
+     auswählen und auf den Pads spielen: Spur 2 spielt die Akkorde.
    - **Ableton:** Einstellungen → Link/Tempo/MIDI: beim Eingang „CheatChord“ **Spur** einschalten. Dann bei der Spur
      „MIDI From: CheatChord“ und Monitor „In“.
 4. **Wichtig:** Die CheatChord-Spur selbst bekommt als MIDI-Eingang nur dein Keyboard oder deine Pads, nicht „Alle
