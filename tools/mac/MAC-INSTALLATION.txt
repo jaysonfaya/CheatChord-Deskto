@@ -1,0 +1,30 @@
+CHEATCHORD AUF DEM MAC INSTALLIEREN
+===================================
+
+1. Doppelklick auf "CheatChord Installer.pkg".
+
+2. macOS sagt: "kann nicht geöffnet werden" / "Apple konnte nicht überprüfen ...".
+   Das ist normal: CheatChord hat keine (kostenpflichtige) Apple-Signatur.
+   -> Auf "Fertig" bzw. "OK" klicken (NICHT "In den Papierkorb").
+
+3. Systemeinstellungen öffnen -> "Datenschutz & Sicherheit" -> ganz nach unten scrollen.
+   Dort steht: "CheatChord Installer.pkg wurde blockiert ..."
+   -> "Trotzdem öffnen" klicken, mit Passwort oder Touch ID bestätigen.
+   -> Im nächsten Fenster nochmals "Trotzdem öffnen".
+
+4. Der Installer startet: Fortfahren -> Installieren -> Passwort eingeben.
+   Er legt alles an den richtigen Ort und gibt die Plugins frei:
+     VST3        /Library/Audio/Plug-Ins/VST3/CheatChord.vst3
+     Audio Unit  /Library/Audio/Plug-Ins/Components/CheatChord.component
+     VST2        /Library/Audio/Plug-Ins/VST/CheatChord.vst
+     App         /Programme/CheatChord.app
+
+5. DAW neu starten und neu scannen.
+   Ableton: Einstellungen -> Plug-Ins -> "Audio Units verwenden" an, "VST3-Plug-In System-Ordner verwenden" an
+            -> mit gedrückter ALT-Taste auf "Neu scannen".
+   Logic:   prüft die Audio Unit beim nächsten Start selbst.
+   CheatChord steht unter dem Hersteller JJ DA PLUG.
+
+Klappt der Installer nicht: im Ordner "Ohne Installer (Plugins einzeln)" liegt
+"CheatChord installieren.command". Rechtsklick -> Öffnen (bzw. Schritt 3 oben), es kopiert die Plugins
+in deinen Benutzer-Ordner und gibt sie frei.

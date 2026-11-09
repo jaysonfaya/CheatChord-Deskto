@@ -1,0 +1,25 @@
+#!/bin/bash
+# CheatChord installer, after the files are in place (runs as root, with the password the owner typed).
+# The plugins are not signed by Apple: they get a local (ad hoc) signature and lose any download block, so Ableton,
+# Logic, MPC and other hosts load them. Old copies from the script installer in the user's own folders are removed,
+# so the DAW does not find CheatChord twice.
+PLUG="/Library/Audio/Plug-Ins"
+for b in "$PLUG/VST3/CheatChord.vst3" "$PLUG/Components/CheatChord.component" "$PLUG/VST/CheatChord.vst" "/Applications/CheatChord.app"; do
+  [ -e "$b" ] || continue
+  xattr -dr com.apple.quarantine "$b" 2>/dev/null
+  xattr -dr com.apple.provenance "$b" 2>/dev/null
+  codesign --force --deep -s - "$b" >/dev/null 2>&1
+  chmod -R a+rX "$b"
+done
+U=$(stat -f %Su /dev/console 2>/dev/null)
+if [ -n "$U" ] && [ "$U" != "root" ]; then
+  H=$(dscl . -read "/Users/$U" NFSHomeDirectory 2>/dev/null | awk '{print $2}')
+  if [ -n "$H" ]; then
+    rm -rf "$H/Library/Audio/Plug-Ins/VST3/CheatChord.vst3" "$H/Library/Audio/Plug-Ins/Components/CheatChord.component" \
+           "$H/Library/Audio/Plug-Ins/VST/CheatChord.vst" "$H/Applications/CheatChord.app"
+  fi
+  # the documents folder for presets, layouts and MIDI exports
+  [ -n "$H" ] && sudo -u "$U" mkdir -p "$H/Documents/JJ DA PLUG/CheatChord" 2>/dev/null
+fi
+killall -9 AudioComponentRegistrar >/dev/null 2>&1   # AU list refreshes
+exit 0

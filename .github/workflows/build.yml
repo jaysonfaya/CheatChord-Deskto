@@ -57,25 +57,39 @@ jobs:
           for b in dist/CheatChord-macOS/*.vst3 dist/CheatChord-macOS/*.vst dist/CheatChord-macOS/*.component dist/CheatChord-macOS/*.app; do codesign --force --deep -s - "$b"; done
           cp INSTALL.txt ANLEITUNG.md dist/CheatChord-macOS/
           mkdir -p ~/Applications
-          cp "tools/mac/CheatChord installieren.command" dist/CheatChord-macOS/
-          chmod +x "dist/CheatChord-macOS/CheatChord installieren.command"
-          cd dist && ditto -c -k --keepParent CheatChord-macOS CheatChord-macOS.zip
+          mkdir -p "dist/CheatChord-macOS/Ohne Installer (Plugins einzeln)"
+          mv dist/CheatChord-macOS/CheatChord.vst3 dist/CheatChord-macOS/CheatChord.component dist/CheatChord-macOS/CheatChord.vst \
+             dist/CheatChord-macOS/CheatChord.app "dist/CheatChord-macOS/Ohne Installer (Plugins einzeln)/"
+          cp "tools/mac/CheatChord installieren.command" "dist/CheatChord-macOS/Ohne Installer (Plugins einzeln)/"
+          chmod +x "dist/CheatChord-macOS/Ohne Installer (Plugins einzeln)/CheatChord installieren.command"
+      - name: Installer (.pkg, all formats to the system plug-in folders, ad hoc signed after install)
+        run: |
+          bash tools/mac/make_pkg.sh "dist/CheatChord-macOS/Ohne Installer (Plugins einzeln)" dist/CheatChord-macOS
+          cp tools/mac/MAC-INSTALLATION.txt dist/CheatChord-macOS/
+      - name: Installer test (install on this Mac, check the files, signatures and the AU)
+        run: |
+          sudo installer -pkg "dist/CheatChord-macOS/CheatChord Installer.pkg" -target /
+          for b in /Library/Audio/Plug-Ins/VST3/CheatChord.vst3 /Library/Audio/Plug-Ins/Components/CheatChord.component \
+                   /Library/Audio/Plug-Ins/VST/CheatChord.vst /Applications/CheatChord.app; do
+            test -e "$b" || { echo "missing: $b"; exit 1; }
+            codesign --verify --deep "$b" && echo "ok: $b"
+            if xattr -p com.apple.quarantine "$b" 2>/dev/null; then echo "still quarantined: $b"; exit 1; fi
+          done
+          killall -9 AudioComponentRegistrar || true
+          auval -v aumu ChtC JjDp | tail -3
       - uses: actions/upload-artifact@v4
         with:
           name: CheatChord-4.1.0-macOS
-          path: dist/CheatChord-macOS.zip
+          path: dist/CheatChord-macOS
       - name: pluginval (strictness 5)
         continue-on-error: true
         run: |
           curl -sSL -o pv.zip https://github.com/Tracktion/pluginval/releases/latest/download/pluginval_macOS.zip
           unzip -q pv.zip
-          ./pluginval.app/Contents/MacOS/pluginval --strictness-level 5 --skip-gui-tests --validate-in-process --validate dist/CheatChord-macOS/CheatChord.vst3
+          ./pluginval.app/Contents/MacOS/pluginval --strictness-level 5 --skip-gui-tests --validate-in-process --validate /Library/Audio/Plug-Ins/VST3/CheatChord.vst3
       - name: AU validation
         continue-on-error: true
         run: |
-          mkdir -p ~/Library/Audio/Plug-Ins/Components
-          cp -R dist/CheatChord-macOS/CheatChord.component ~/Library/Audio/Plug-Ins/Components/
-          killall -9 AudioComponentRegistrar || true
           auval -v aumu ChtC JjDp
 
   linux:
