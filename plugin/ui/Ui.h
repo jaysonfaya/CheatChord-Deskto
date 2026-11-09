@@ -85,6 +85,7 @@ public:
     void setOn (bool o) { if (o != on) { on = o; repaint(); } }
     void setTextScale (float s) { textScale = s; repaint(); }
     void setHelp (const juce::String& h) { help = h; setTooltip (h); }
+    void setHelp (const juce::String& t, const juce::String& h) { helpTitle = t; setHelp (h); }
 
     std::function<void (const juce::MouseEvent&)> onClick, onDouble, onDragStart;
     std::function<void (const juce::String&, const juce::String&)> onHint;   // title, text
@@ -123,6 +124,7 @@ public:
     int rowsNeeded() const { return cols > 0 ? (labels.size() + cols - 1) / cols : 1; }
 
     std::function<void (int)> onPick;   // default: set the engine value
+    std::vector<int> values;            // optional: the engine value of each cell (else index + offset)
     juce::StringArray labels;
     juce::String help;
     float textH = 17.0f;

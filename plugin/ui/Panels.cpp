@@ -1,4 +1,5 @@
 #include "Panels.h"
+#include "../Grooves.h"
 #include "../PluginProcessor.h"
 
 namespace cc::ui {
@@ -48,6 +49,7 @@ static void splitChord (juce::String t, juce::String& name, juce::String& badge,
 // ================================================================ Progression
 ProgressionPanel::ProgressionPanel (Ctx& c)
     : Panel ("Progression"), Live (c), len (c, "gen_len", { "4 CHORDS", "8 CHORDS" }), scope (c, "scope", { "EDIT CHORD", "EDIT ALL" }),
+      loop (c, "loop_sync", { "SONG", "4 BARS", "8 BARS" }),
       status (c, "status", 15.0f)
 {
     for (int i = 0; i < 8; ++i)
@@ -64,6 +66,9 @@ ProgressionPanel::ProgressionPanel (Ctx& c)
         addAndMakeVisible (t);
     }
     len.setHelp ("How many chords the loop has. Chords beyond 4 stay kept (grey) when you switch back.");
+    loop.values = { 1, 4, 5 };
+    loop.setHelp ("Loop length", "SONG: the chords stretch over the DAW's loop or song section. 4 BARS / 8 BARS: the whole "
+                  "progression fits into a 4- or 8-bar loop, whatever the DAW's loop is. More choices: GROOVE -> Loop sync.");
     scope.setHelp ("EDIT CHORD: key, scale, style and the profiles re-fit only the selected chord. EDIT ALL: every chord follows.");
     cruise.set ("CRUISE");
     cruise.setHelp ("Adds the next chord that fits after the selected one (the suggestion shows on the button).");
@@ -104,7 +109,7 @@ ProgressionPanel::ProgressionPanel (Ctx& c)
     ctx.model.want ("export_status");
     hintAll (ctx, { &cruise, &generate, &undo, &redo, &del, &clear, &drag, &exportMid });
     for (int i = 0; i < 8; ++i) hintAll (ctx, { &chords[i] });
-    for (auto* x : std::initializer_list<juce::Component*> { &len, &scope, &cruise, &generate, &undo, &redo, &del, &clear, &drag, &exportMid, &status })
+    for (auto* x : std::initializer_list<juce::Component*> { &len, &scope, &loop, &cruise, &generate, &undo, &redo, &del, &clear, &drag, &exportMid, &status })
         addAndMakeVisible (x);
 }
 
@@ -168,10 +173,12 @@ void ProgressionPanel::resized()
     auto r = content();
     auto tb = titleBar();
     if (! popButton().isEmpty()) tb.removeFromRight (tb.getHeight() + 8);
-    const int segW = juce::jmin (U (220), tb.getWidth() / 4);
+    const int segW = juce::jmin (U (220), tb.getWidth() / 5);
     scope.setBounds (tb.removeFromRight (segW).reduced (0, 1));
     tb.removeFromRight (U (8));
     len.setBounds (tb.removeFromRight (segW).reduced (0, 1));
+    tb.removeFromRight (U (8));
+    loop.setBounds (tb.removeFromRight (juce::jmin (U (270), tb.getWidth() - U (150))).reduced (0, 1));
 
     const bool tall = r.getHeight() > 200;
     const int statusH = r.getHeight() > 150 ? 26 : 0;
@@ -287,6 +294,7 @@ BrowserPanel::BrowserPanel (Ctx& c)
     : Panel ("Harmony browser"), ctx (c), key (c, "key", {}, 12), scale (c, "scale", {}, 8),
       style (c, "style", "Style"), artist (c, "artist", "Artist"), producer (c, "producer", "Producer"),
       styleP (c, "style", "Style", true), artistP (c, "artist", "Artist", true), producerP (c, "producer", "Producer", true),
+      keyP (c, "key", "Key"), scaleP (c, "scale", "Scale"),
       spice (c, "spice", "Spice", pct), smix (c, "style_mix", "Style", pct), amix (c, "artist_mix", "Artist", pct),
       pmix (c, "producer_mix", "Producer", pct),
       styleInfo (c, "style_info", 14.0f, juce::Justification::centredLeft), artistInfo (c, "artist_info", 14.0f, juce::Justification::centredLeft),
@@ -299,7 +307,7 @@ BrowserPanel::BrowserPanel (Ctx& c)
     amix.setHelp ("How strongly the ARTIST profile shapes the ideas.");
     pmix.setHelp ("How strongly the PRODUCER profile shapes the ideas.");
     styleInfo.colour = artistInfo.colour = producerInfo.colour = pal().dim;
-    for (auto* x : std::initializer_list<juce::Component*> { &key, &scale, &style, &artist, &producer, &styleP, &artistP, &producerP,
+    for (auto* x : std::initializer_list<juce::Component*> { &key, &scale, &keyP, &scaleP, &style, &artist, &producer, &styleP, &artistP, &producerP,
                                                              &spice, &smix, &amix, &pmix, &styleInfo, &artistInfo, &producerInfo })
         addAndMakeVisible (x);
 }
@@ -307,12 +315,34 @@ BrowserPanel::BrowserPanel (Ctx& c)
 void BrowserPanel::resized()
 {
     auto r = content();
-    lists = r.getHeight() > U (200) && r.getWidth() > 520;
+    const bool wideKeys = r.getWidth() > 1100;
+    const int keysH = wideKeys ? U (60) : U (110);
+    // three lists side by side only where each stays readable; else stacked, else big pickers. Very little height:
+    // key and scale become pickers too, so every name keeps its full size
+    const bool side = r.getWidth() > U (720);
+    lists = side ? r.getHeight() > keysH + U (230) : r.getHeight() > keysH + U (700);
+    const bool tiny = ! lists && r.getHeight() < keysH + U (62) + U (110);
     style.setVisible (lists); artist.setVisible (lists); producer.setVisible (lists);
     styleP.setVisible (! lists); artistP.setVisible (! lists); producerP.setVisible (! lists);
+    key.setVisible (! tiny); scale.setVisible (! tiny);
+    keyP.setVisible (tiny); scaleP.setVisible (tiny);
+    if (tiny)
+    {
+        keyLab = scaleLab = {};
+        styleInfo.setVisible (false); artistInfo.setVisible (false); producerInfo.setVisible (false);
+        const int ph = juce::jmin (U (60), r.getHeight() * 3 / 10);
+        auto a = take (r, ph, 8), b = take (r, ph, 8);
+        const int w2 = (a.getWidth() - 10) / 2, w3 = (b.getWidth() - 20) / 3;
+        keyP.setBounds (takeLeft (a, w2, 10));
+        scaleP.setBounds (a);
+        styleP.setBounds (takeLeft (b, w3, 10));
+        artistP.setBounds (takeLeft (b, w3, 10));
+        producerP.setBounds (b);
+        grid ({ &spice, &smix, &amix, &pmix }, r, 4, 8);
+        return;
+    }
 
-    const bool wideKeys = r.getWidth() > 1100;
-    auto top = take (r, wideKeys ? 56 : 104, 10);
+    auto top = take (r, keysH, 10);
     if (wideKeys)
     {
         keyLab = top.removeFromTop (U (18));
@@ -332,6 +362,30 @@ void BrowserPanel::resized()
     }
     scale.repaint();
 
+    if (! lists)
+    {
+        // little height: the three pickers side by side (big text), the four knobs in one row under them
+        styleInfo.setVisible (false); artistInfo.setVisible (false); producerInfo.setVisible (false);
+        const bool row = r.getWidth() > U (480);
+        const int ph = juce::jmin (U (62), row ? r.getHeight() / 2 : r.getHeight() * 2 / 3 / 3);
+        if (row)
+        {
+            auto p = take (r, ph, 10);
+            const int w = (p.getWidth() - 20) / 3;
+            styleP.setBounds (takeLeft (p, w, 10));
+            artistP.setBounds (takeLeft (p, w, 10));
+            producerP.setBounds (p);
+        }
+        else
+        {
+            styleP.setBounds (take (r, ph, 6));
+            artistP.setBounds (take (r, ph, 6));
+            producerP.setBounds (take (r, ph, 8));
+        }
+        grid ({ &spice, &smix, &amix, &pmix }, r, 4, 8);
+        return;
+    }
+
     // influence knobs on the right (or below when narrow)
     const bool knobsRight = r.getWidth() > 540;
     juce::Rectangle<int> kn;
@@ -340,7 +394,7 @@ void BrowserPanel::resized()
     if (knobsRight) r.removeFromRight (U (10)); else r.removeFromBottom (U (8));
     grid ({ &spice, &smix, &amix, &pmix }, kn, knobsRight ? 2 : 4, 6);
 
-    const int infoH = r.getHeight() > 260 ? 22 : 0;
+    const int infoH = r.getHeight() > U (300) ? U (24) : 0;
     auto info = infoH ? r.removeFromBottom (infoH * 3 + 8) : juce::Rectangle<int>();
     styleInfo.setVisible (infoH > 0); artistInfo.setVisible (infoH > 0); producerInfo.setVisible (infoH > 0);
     if (infoH)
@@ -351,11 +405,11 @@ void BrowserPanel::resized()
         producerInfo.setBounds (info);
     }
     if (lists)
-        grid ({ &style, &artist, &producer }, r, 3, 10);
+        grid ({ &style, &artist, &producer }, r, side ? 3 : 1, 10);
     else
     {
         auto p = r;
-        const int h = juce::jmin (U (58), (p.getHeight() - 12) / 3);
+        const int h = juce::jmin (U (64), (p.getHeight() - 12) / 3);
         styleP.setBounds (take (p, h, 6));
         artistP.setBounds (take (p, h, 6));
         producerP.setBounds (take (p, h, 6));
@@ -510,7 +564,7 @@ void ChordPanel::paint (juce::Graphics& g)
 
 // ================================================================ Groove
 GroovePanel::GroovePanel (Ctx& c)
-    : Panel ("Play & groove"),
+    : Panel ("Play & groove"), Live (c),
       loopSync (c, "loop_sync", { "MANUAL", "AUTO", "1 BAR", "2 BARS", "4 BARS", "8 BARS", "16 BARS", "32 BARS" }, 8),
       direction (c, "direction", {}, 4), push (c, "push", { "OFF", "ON" }, 2), arpOct (c, "arp_oct", { "1", "2", "3" }, 3),
       strumDir (c, "strum_mode", {}, 5), mute (c, "mute", { "SOUND", "MUTED" }, 2),
@@ -534,15 +588,86 @@ GroovePanel::GroovePanel (Ctx& c)
     velocity.setHelp ("The velocity of the notes.");
     humanize.setHelp ("Small changes in timing, velocity and length, up to a loose human player.");
     mute.setHelp ("MUTED: the progression stays silent (pads and clicks still sound).");
+    grooveBtn.setHelp ("Groove library", juce::String (NUM_GROOVES_LIB) + " grooves by genre: rhythm, swing, note length, strum and "
+                       "feel in one click. A * means you changed something since.");
+    grooveBtn.onClick = [this] (const juce::MouseEvent&) { grooveMenu(); };
+    diceBtn.set ("DICE", "new groove");
+    diceBtn.setHelp ("Dice", "Rolls a new groove that fits the style (now and then a surprise from another genre), slightly varied.");
+    diceBtn.onClick = [this] (const juce::MouseEvent&)
+    {
+        ctx.proc.diceGroove();
+        const int i = ctx.proc.grooveIndex();
+        if (i >= 0) ctx.help (GROOVES_LIB[i].name, GROOVES_LIB[i].about);
+        if (ctx.changed) ctx.changed();
+    };
+    followBtn.setHelp ("Groove follows", "FOLLOW: a preset or a new style brings a groove that fits it. LOCK: your groove stays, "
+                       "whatever preset or style you load.");
+    followBtn.onClick = [this] (const juce::MouseEvent&) { ctx.proc.setGrooveFollow (! ctx.proc.grooveFollows()); update(); };
+    hintAll (ctx, { &grooveBtn, &diceBtn, &followBtn });
+    for (auto* x : std::initializer_list<juce::Component*> { &grooveBtn, &diceBtn, &followBtn })
+        addAndMakeVisible (x);
     for (auto* x : std::initializer_list<juce::Component*> { &loopSync, &direction, &push, &arpOct, &strumDir, &mute, &bars, &rhythm, &rrate,
                                                              &rate, &swing, &strum, &gate, &velocity, &humanize, &loopInfo })
         addAndMakeVisible (x);
+}
+
+void GroovePanel::update()
+{
+    const int i = ctx.proc.grooveIndex();
+    juce::String name = i >= 0 ? juce::String (GROOVES_LIB[i].name) + (ctx.proc.grooveEdited() ? " *" : "") : juce::String ("CHOOSE A GROOVE");
+    if (name != shownGroove)
+    {
+        shownGroove = name;
+        grooveBtn.set (name, i >= 0 ? juce::String (GROOVES_LIB[i].family) : juce::String (NUM_GROOVES_LIB) + " GROOVES");
+    }
+    followBtn.set (ctx.proc.grooveFollows() ? "FOLLOW" : "LOCK", ctx.proc.grooveFollows() ? "preset / style" : "groove stays",
+                   ctx.proc.grooveFollows());
+}
+
+void GroovePanel::grooveMenu()
+{
+    juce::PopupMenu m;
+    const int cur = ctx.proc.grooveIndex();
+    juce::String fam;
+    int inCol = 0;
+    for (int i = 0; i < NUM_GROOVES_LIB; ++i)
+    {
+        const auto& g = GROOVES_LIB[i];
+        if (fam != g.family)
+        {
+            if (inCol > 18) { m.addColumnBreak(); inCol = 0; }
+            fam = g.family;
+            m.addSectionHeader (fam.toUpperCase());
+            ++inCol;
+        }
+        m.addItem (i + 1, g.name, true, i == cur);
+        ++inCol;
+    }
+    juce::Component::SafePointer<GroovePanel> safe (this);
+    m.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (&grooveBtn).withStandardItemHeight (U (28)), [safe] (int r)
+    {
+        if (safe == nullptr || r <= 0 || r > NUM_GROOVES_LIB) return;
+        safe->ctx.proc.applyGroove (r - 1);
+        safe->ctx.help (GROOVES_LIB[r - 1].name, GROOVES_LIB[r - 1].about);
+        safe->update();
+        if (safe->ctx.changed) safe->ctx.changed();
+    });
 }
 
 void GroovePanel::resized()
 {
     auto r = content();
     for (auto& l : labs) l = {};
+    {
+        // the groove library on top: the groove, the dice, follow / lock
+        auto g = take (r, juce::jlimit (U (40), U (56), r.getHeight() / 7), 10);
+        const int w = g.getWidth();
+        followBtn.setBounds (g.removeFromRight (juce::jmin (U (150), w / 5)));
+        g.removeFromRight (U (8));
+        diceBtn.setBounds (g.removeFromRight (juce::jmin (U (150), w / 5)));
+        g.removeFromRight (U (8));
+        grooveBtn.setBounds (g);
+    }
     const bool twoCols = r.getWidth() >= 640 && r.getHeight() < 430;
     auto left = r, right = r;
     if (twoCols)
@@ -623,7 +748,7 @@ SoundPanel::SoundPanel (Ctx& c)
     bassCh.options.insert (0, "SAME AS CHORDS");
     sound.setHelp ("The built-in sound. It plays in every DAW, also where a plugin's MIDI output can't be used.");
     midiOut.setHelp ("MIDI OUT to the DAW: route this track's MIDI to any other instrument (Reaper, Bitwig, Cubase, FL Studio, Logic as AU).");
-    synth.setHelp ("Keeps the built-in sound on while MIDI goes out.");
+    synth.setHelp ("CheatChord's own sound. OFF: the plugin itself is silent, the chords still go out as MIDI (to the port and the DAW).");
     panic.set ("ALL NOTES OFF");
     panic.onClick = [this] (const juce::MouseEvent&) { ctx.tap ("panic"); };
     port.colour = pal().dim;
@@ -713,7 +838,7 @@ void SoundPanel::paint (juce::Graphics& g)
     Panel::paint (g);
     label (g, "Built-in sound", labs[0]);
     label (g, "MIDI out to the DAW", labs[1]);
-    label (g, "Synth with MIDI", labs[2]);
+    label (g, "Own sound", labs[2]);
 }
 
 // ================================================================ Pads
@@ -798,14 +923,14 @@ void HistoryPanel::resized()
     undo.setBounds (takeLeft (b, b.getWidth() / 3, 8));
     redo.setBounds (takeLeft (b, b.getWidth() / 2, 8));
     pos.setBounds (b);
-    const int fit = juce::jlimit (U (1), U (8), (r.getHeight() + 5) / 31);   // rows of 26 px or more
-    const float h = juce::jmin (44.0f, (r.getHeight() - (fit - 1) * 5) / (float) fit);
+    const int fit = juce::jlimit (1, 8, (r.getHeight() + 5) / (U (42) + 5));   // readable rows: fewer, never tiny
+    const float h = juce::jmin ((float) U (54), (r.getHeight() - (fit - 1) * 5) / (float) fit);
     for (int i = 0; i < 8; ++i)
     {
-        rows[i].setBounds (juce::Rectangle<float> ((float) r.getX(), r.getY() + i * (h + 5), (float) r.getWidth(), juce::jmin (h, 44.0f)).toNearestInt());
+        rows[i].setBounds (juce::Rectangle<float> ((float) r.getX(), r.getY() + i * (h + 5), (float) r.getWidth(), h).toNearestInt());
         if (i >= fit) rows[i].setBounds ({});
     }
-    for (auto& t : rows) t.setTextScale (0.95f);
+    for (auto& t : rows) t.setTextScale (1.0f);
 }
 
 // ================================================================ Presets
@@ -863,10 +988,11 @@ void PresetsPanel::resized()
     sv.removeFromRight (U (8));
     slotName.setBounds (sv);
 
-    const bool wide = r.getWidth() > 700;
-    const int fcols = wide ? 6 : 4, ucols = wide ? 8 : 4;
-    const int frows = 24 / fcols, urows = 16 / ucols;
-    const int avail = r.getHeight() - 17 * 2 - 10;
+    // big, readable names: fewer columns, the text at full size (it wraps or ends in "..." rather than shrinking)
+    const bool wide = r.getWidth() > U (900), mid = r.getWidth() > U (560);
+    const int fcols = wide ? 6 : mid ? 4 : 3, ucols = wide ? 8 : 4;
+    const int frows = (24 + fcols - 1) / fcols, urows = (16 + ucols - 1) / ucols;
+    const int avail = r.getHeight() - U (17) * 2 - 10;
     const int fh = avail * frows / (frows + urows);
     facLab = take (r, U (17), 2);
     std::vector<juce::Component*> f, u;
@@ -875,8 +1001,8 @@ void PresetsPanel::resized()
     grid (f, take (r, fh, 10), fcols, 5);
     usrLab = take (r, U (17), 2);
     grid (u, r, ucols, 5);
-    for (auto& t : fac) t.setTextScale (0.72f);
-    for (auto& t : usr) t.setTextScale (0.72f);
+    for (auto& t : fac) t.setTextScale (1.0f);
+    for (auto& t : usr) t.setTextScale (1.0f);
 }
 
 void PresetsPanel::paint (juce::Graphics& g)

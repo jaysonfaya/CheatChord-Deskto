@@ -708,7 +708,7 @@
   },
   {
    "key": "synth",
-   "name": "Synth With MIDI",
+   "name": "Own Sound",
    "options": [
     "Off",
     "On"

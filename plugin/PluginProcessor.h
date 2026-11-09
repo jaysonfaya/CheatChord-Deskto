@@ -67,6 +67,13 @@ public:
     MidiPort& midiPort() noexcept { return port; }
     void selectMidiPort (const juce::String& id);
     bool hostPlaying() const noexcept { return playingNow.load(); }
+    // the groove library (Grooves.h): message thread
+    int grooveIndex() const noexcept { return groove; }          // -1: none chosen yet
+    bool grooveEdited();                                        // the settings differ from the chosen groove
+    void applyGroove (int i, bool keepRhythmAndSwing = false);
+    void diceGroove();                                          // a new groove that fits the style, slightly varied
+    bool grooveFollows() const noexcept { return grooveFollow; }
+    void setGrooveFollow (bool f);                              // FOLLOW: presets and styles bring their groove; LOCK: it stays
 
 private:
     template <typename F> void process (juce::AudioBuffer<F>&, juce::MidiBuffer&);
@@ -90,7 +97,13 @@ private:
     std::atomic<double> bpm { 120.0 };
     std::atomic<bool> playingNow { false };
     std::atomic<juce::int64> lastProcessMs { 0 };
-    bool portDecided = false;   // message thread: the port was chosen (by the user or a saved session) or opened by itself
+    bool portDecided = false;
+    int groove = -1;
+    bool grooveFollow = true;
+    int seenStyle = INT_MIN, seenRhythm = INT_MIN, seenPreset = INT_MIN;
+    juce::Random dice;
+    void watchGroove();   // timer: a preset or style changed -> the groove follows (or stays, LOCK)
+    int grooveForStyle (int style, int rhythm) const;   // message thread: the port was chosen (by the user or a saved session) or opened by itself
     juce::String lastCycle;
     std::vector<float> scratchL, scratchR;
     int64_t idleMs = 0;

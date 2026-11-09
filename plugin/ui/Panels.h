@@ -19,7 +19,7 @@ public:
 private:
     void chordMenu (int i);
     Tile chords[8];
-    Bar len, scope;
+    Bar len, scope, loop;
     Tile cruise { Tile::Primary }, generate { Tile::Primary }, undo { Tile::Action }, redo { Tile::Action },
          del { Tile::Action }, clear { Tile::Action }, drag { Tile::Ghost }, exportMid { Tile::Action };
     Line status;
@@ -50,7 +50,7 @@ private:
     Ctx& ctx;
     Bar key, scale;
     SearchList style, artist, producer;
-    Picker styleP, artistP, producerP;
+    Picker styleP, artistP, producerP, keyP, scaleP;
     Knob spice, smix, amix, pmix;
     Line styleInfo, artistInfo, producerInfo;
     juce::Rectangle<int> keyLab, scaleLab;
@@ -83,13 +83,17 @@ private:
     juce::Rectangle<int> labs[10];
 };
 
-class GroovePanel : public Panel
+class GroovePanel : public Panel, public Live
 {
 public:
     explicit GroovePanel (Ctx&);
+    void update() override;
     void resized() override;
     void paint (juce::Graphics&) override;
 private:
+    void grooveMenu();
+    Tile grooveBtn { Tile::Primary }, diceBtn { Tile::Action }, followBtn;
+    juce::String shownGroove;
     Bar loopSync, direction, push, arpOct, strumDir, mute;
     Picker bars, rhythm, rrate, rate;
     Knob swing, strum, gate, velocity, humanize;

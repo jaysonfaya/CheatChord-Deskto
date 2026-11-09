@@ -3,6 +3,8 @@
 // (a build machine without the ALSA sequencer).
 #include <juce_audio_processors/juce_audio_processors.h>
 #include "../plugin/PluginProcessor.h"
+#include "../plugin/Grooves.h"
+#include "../plugin/ParamsMeta.h"
 
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter();
 
@@ -39,6 +41,33 @@ int main()
     for (auto* q : p->getParameters()) q->setValueNotifyingHost (q->getDefaultValue());
     blocks (*p, 200);
     if (p->engine().getIntU ("midi_out") != 1) { std::printf ("FAIL: the host defaults switch MIDI Out off\n"); return 1; }
+
+    // the groove library: at least 50, every style name real, every value in range, apply and dice work
+    {
+        auto* st = cc::findParam ("style");
+        auto* rh = cc::findParam ("rhythm");
+        int bad = 0;
+        for (int i = 0; i < cc::NUM_GROOVES_LIB; ++i)
+        {
+            const auto& g = cc::GROOVES_LIB[i];
+            for (auto& n : juce::StringArray::fromTokens (g.styles, "|", ""))
+            {
+                bool found = false;
+                for (int k = 0; k < st->nopt; ++k) found |= n == st->opt[k];
+                if (! found) { std::printf ("FAIL: groove %s: no style \"%s\"\n", g.name, n.toRawUTF8()); ++bad; }
+            }
+            if (g.rhythm < 0 || g.rhythm >= rh->nopt || g.swing < 50 || g.swing > 75 || g.gate < 10 || g.gate > 100
+                || g.strum > 100 || g.velocity < 1 || g.velocity > 127 || g.humanize > 100 || g.strumMode > 4 || g.arpOct > 2)
+            { std::printf ("FAIL: groove %s: a value out of range\n", g.name); ++bad; }
+        }
+        p->applyGroove (5);
+        const auto& g = cc::GROOVES_LIB[5];
+        if (p->engine().getIntU ("rhythm") != g.rhythm || p->engine().getIntU ("gate") != g.gate || p->grooveEdited()) ++bad;
+        p->diceGroove();
+        if (p->grooveIndex() == 5 || p->grooveIndex() < 0) ++bad;
+        std::printf ("%s %d grooves, apply and dice\n", bad == 0 && cc::NUM_GROOVES_LIB >= 50 ? "ok  " : "FAIL", cc::NUM_GROOVES_LIB);
+        if (bad || cc::NUM_GROOVES_LIB < 50) return 1;
+    }
     p->selectMidiPort ("virtual");
     std::printf ("port: %s\n", p->midiPort().status().toRawUTF8());
     if (! p->midiPort().active()) { std::printf ("SKIPPED (no MIDI system here)\n"); return 0; }

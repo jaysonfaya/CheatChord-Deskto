@@ -190,7 +190,7 @@ static const ParamMeta PARAMS[] = {
     {"tone", "Tone", 0, 100, 50, 0, nullptr, 0},
     {"release", "Release", 0, 100, 35, 0, nullptr, 0},
     {"space", "Space", 0, 100, 30, 0, nullptr, 0},
-    {"synth", "Synth With MIDI", 0, 1, 0, 2, OPT_63, 0},
+    {"synth", "Own Sound", 0, 1, 0, 2, OPT_63, 0},
     {"channel", "MIDI Ch", 1, 16, 2, 0, nullptr, 0},
     {"bass_ch", "Bass Ch", 0, 16, 0, 0, nullptr, 0},
     {"pad_base", "Pad 1 Note", 0, 112, 36, 0, nullptr, 0},

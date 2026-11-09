@@ -191,6 +191,26 @@ static void playTest (juce::AudioPluginInstance& p, double sr, int block)
         if (m.isNoteOff()) ++poff;
     }
     CHECK (pon >= 3 && pon == poff, "pad 1 plays chord 1 and stops on release (%d on, %d off)", pon, poff);
+    // MORPH: a knob turned while the pad is held changes the sounding chord at once (notes off and on while held),
+    // and the release still ends every note
+    if (auto* oct = paramNamed (p, "Octave"))
+    {
+        const float was = oct->getValue();
+        r.out.clear();
+        r.blocks (1, [] (juce::MidiBuffer& m, int) { m.addEvent (juce::MidiMessage::noteOn (1, 36, (juce::uint8) 100), 17); });
+        r.blocks ((int) (0.2 * sr / block));
+        const size_t before = r.out.size();
+        oct->setValueNotifyingHost (was > 0.5f ? 0.0f : 1.0f);
+        r.blocks ((int) (0.2 * sr / block));
+        const size_t during = r.out.size() - before;
+        r.blocks (1, [] (juce::MidiBuffer& m, int) { m.addEvent (juce::MidiMessage::noteOff (1, 36), 5); });
+        r.seconds (0.3);
+        int on = 0, off = 0;
+        for (auto& [at, m] : r.out) { if (m.isNoteOn()) ++on; if (m.isNoteOff()) ++off; }
+        CHECK (during >= 2 && on == off, "a knob morphs the held chord (%d messages while held, %d on, %d off)", (int) during, on, off);
+        oct->setValueNotifyingHost (was);
+        r.seconds (0.2);
+    }
     p.releaseResources();
 }
 

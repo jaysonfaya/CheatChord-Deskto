@@ -109,6 +109,28 @@ Farbe, im Tab und im Titel.
 - **Farben:** Velvet, Graphite oder Daylight (LAYOUT → Colour theme).
 - „Use this layout … for new instances“ merkt sich alles für neue Instanzen.
 
+## Grooves: Bibliothek, Würfel, Follow
+
+Oben im Panel **GROOVE**:
+- **Groove-Knopf:** öffnet die Bibliothek mit 62 Grooves, nach Genre sortiert (Hip-Hop, R&B & Soul, Funk & Disco,
+  House & Dance, Electronic, Cinematic & Classical, Latin & Caribbean, African, Rock/Pop/Country, Jazz & Blues). Ein
+  Groove setzt Rhythmus, Swing, Notenlänge, Push, Strum, Velocity und Humanize auf einmal. Der Helper zeigt, was der
+  Groove ist und in welchem Tempo er zu Hause ist. Ein * heisst: du hast seither etwas verändert.
+- **DICE:** würfelt einen neuen Groove, der zum Stil passt (ab und zu eine Überraschung aus einem anderen Genre),
+  leicht variiert.
+- **FOLLOW / LOCK:** Bei FOLLOW bringt ein Preset oder ein neuer Stil einen passenden Groove mit. Bei LOCK bleibt dein
+  Groove, egal was du lädst.
+
+**Loop-Länge schnell umstellen:** oben im Panel PROGRESSION **SONG / 4 BARS / 8 BARS**. SONG: die Akkorde verteilen
+sich über den Loop bzw. Songabschnitt der DAW. 4 BARS / 8 BARS: die ganze Progression passt in einen 4- oder 8-Takt-
+Loop. Weitere Längen unter GROOVE → Loop sync.
+
+**Knöpfe verändern den Akkord sofort (Morph):** Voicing, Oktave, Bass, Voice Leading, Spice, Stil und die Profile
+ändern den gerade klingenden Akkord, auch während du ein Pad hältst. Neue Töne setzen ein, wegfallende hören auf.
+
+**OWN SOUND:** der eingebaute Klang von CheatChord. Aus: das Plugin selbst ist still, die Akkorde gehen trotzdem als
+MIDI raus (an den Port und die DAW).
+
 ## Eigener MIDI-Port: die Akkorde als MIDI-Eingang einer Spur
 
 CheatChord kann seine Akkorde als **eigenes MIDI-Gerät** ausgeben. Dann wählst du in jeder DAW bei einer anderen Spur

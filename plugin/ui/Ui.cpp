@@ -265,7 +265,9 @@ void Tile::paint (juce::Graphics& g)
         fitText (g, sub, bot, juce::jmax (11.0f, big * 0.55f), 1, (on || style == Primary) ? fg.withAlpha (0.78f) : p.dim, juce::Justification::centredTop, 9.0f);
     }
     else
-        fitText (g, text, tr, big, style == Primary || style == Action ? 2 : 1, empty ? p.faint : fg, juce::Justification::centred, 9.0f);
+        // a long name (presets, artists) goes onto two lines before it gets small
+        fitText (g, text, tr, big, style == Primary || style == Action ? 2 : 1, empty ? p.faint : fg, juce::Justification::centred,
+                 r.getHeight() > Uf (40.0f) ? Uf (13.0f) : 9.0f, r.getHeight() > Uf (40.0f) && text.length() > 12 ? 2 : 1);
 }
 
 void Tile::mouseDown (const juce::MouseEvent&) { dragged = false; repaint(); }
@@ -299,7 +301,9 @@ Bar::Bar (Ctx& c, const char* k, juce::StringArray l, int columns, int valueOffs
 
 void Bar::update()
 {
-    int s = ctx.val (key) - offset;
+    const int v = ctx.val (key);
+    int s = v - offset;
+    if (! values.empty()) { s = -1; for (size_t i = 0; i < values.size(); ++i) if (values[i] == v) s = (int) i; }
     if (s != sel) { sel = s; repaint(); }
 }
 
@@ -339,7 +343,7 @@ void Bar::mouseDown (const juce::MouseEvent& e)
         if (cell (i).contains (e.position))
         {
             if (onPick) onPick (i);
-            else ctx.setValue (key, i + offset);
+            else ctx.setValue (key, ! values.empty() && i < (int) values.size() ? values[(size_t) i] : i + offset);
             sel = i;
             repaint();
             return;
@@ -525,7 +529,7 @@ void Picker::open()
         m.addItem (i + 1, options[i], true, i == v - offset);
     }
     juce::Component::SafePointer<Picker> safe (this);
-    m.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (this).withMinimumWidth (field.getWidth() / juce::jmax (1, cols)).withStandardItemHeight (26),
+    m.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (this).withMinimumWidth (field.getWidth() / juce::jmax (1, cols)).withStandardItemHeight (U (32)),
                      [safe] (int r) { if (safe != nullptr && r > 0) safe->ctx.setValue (safe->key, r - 1 + safe->offset); });
 }
 
@@ -582,7 +586,7 @@ void SearchList::resized()
     if (title.isNotEmpty() && ! onPicked) r.removeFromTop (U (24));
     search.setBounds (take (r, juce::jmin (U (34), r.getHeight() / 4), 6));
     list.setBounds (r);
-    list.setRowHeight (juce::jlimit (U (26), U (34), getHeight() / 12));
+    list.setRowHeight (juce::jlimit (U (32), U (42), getHeight() / 10));
 }
 
 void SearchList::paint (juce::Graphics& g)
@@ -606,14 +610,15 @@ void SearchList::paintListBoxItem (int row, juce::Graphics& g, int w, int h, boo
     if (cur) { g.setColour (p.tileOn); g.fillRoundedRectangle (r, 4.0f); }
     else if (row % 2) { g.setColour (p.tile.withAlpha (0.5f)); g.fillRoundedRectangle (r, 4.0f); }
     auto tr = r.reduced (10.0f, 0);
-    if (detail)
+    // the name first and big; the detail (era, genre) only where there is room beside it, never squeezing the name
+    if (detail && tr.getWidth() > Uf (300.0f))
     {
         auto d = detail (i);
         if (d.isNotEmpty())
-            fitText (g, d, tr.removeFromRight (tr.getWidth() * 0.45f), h * 0.45f, 0, cur ? p.tileOnText.withAlpha (0.7f) : p.faint,
-                     juce::Justification::centredRight, 8.0f);
+            fitText (g, d, tr.removeFromRight (tr.getWidth() * 0.34f), h * 0.42f, 0, cur ? p.tileOnText.withAlpha (0.75f) : p.dim,
+                     juce::Justification::centredRight, Uf (12.0f));
     }
-    fitText (g, options[i], tr, h * 0.58f, cur ? 2 : 1, cur ? p.tileOnText : p.text, juce::Justification::centredLeft, 9.0f);
+    fitText (g, options[i], tr, h * 0.56f, cur ? 2 : 1, cur ? p.tileOnText : p.text, juce::Justification::centredLeft, Uf (15.0f));
 }
 
 void SearchList::pick (int row)

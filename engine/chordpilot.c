@@ -656,7 +656,8 @@ static void q_push(queue_t *q, int64_t frame, int on, int ch, int note, int vel,
 }
 
 /* the built-in sound plays when MIDI OUT is off, or with MIDI OUT when SYNTH WITH MIDI is on */
-static int synth_on(const inst_t *s) { return !s->p[P_MIDI_OUT] || s->p[P_SYNTH]; }
+/* desktop: SYNTH alone decides (off = silent here, the chords only go out as MIDI) */
+static int synth_on(const inst_t *s) { return s->p[P_SYNTH] != 0; }
 
 /* one note with its off: both outputs. rev: the synth swells it in reverse over its length */
 static void sched_note_x(inst_t *s, int64_t on_frame, int64_t off_frame, int ch, int note, int vel, int src, int rev) {
@@ -866,7 +867,43 @@ static void audition_sug(inst_t *s, int i) {
 
 /* MORPH: while the loop plays, a change to the chord that is sounding glides into it: notes it lost stop now, notes
  * it gained start now and last as long as the chord (no new attack, no audition) */
+/* held pads morph too: a knob turned while a pad is down changes the chord under the finger (desktop) */
+static void morph_pads(inst_t *s) {
+    for (int p = 0; p < 16; p++) {
+        if (!s->pad[p].active || p >= s->count) continue;
+        const voiced_t *nv = &s->vc[p];
+        uint8_t wch[MAX_VOICE + 1], wn[MAX_VOICE + 1];
+        int w = 0;
+        if (nv->bass >= 0) { wch[w] = (uint8_t)bass_ch(s); wn[w++] = (uint8_t)nv->bass; }
+        for (int k = 0; k < nv->n && w < MAX_VOICE + 1; k++) { wch[w] = (uint8_t)chord_ch(s); wn[w++] = (uint8_t)nv->note[k]; }
+        int keep = 0;
+        uint8_t kch[MAX_VOICE + 1], kn[MAX_VOICE + 1];
+        for (int j = 0; j < s->pad[p].n; j++) {   /* notes it lost stop now */
+            int ch = s->pad[p].ch[j], n = s->pad[p].note[j], still = 0;
+            for (int k = 0; k < w; k++) if (wch[k] == ch && wn[k] == n) still = 1;
+            if (still) { kch[keep] = (uint8_t)ch; kn[keep++] = (uint8_t)n; continue; }
+            q_push(&s->aq, s->now, 0, ch, n, 0, s->gen[ch][n], SRC_LIVE);
+            q_push(&s->sq, s->now, 0, ch, n, 0, s->gen[ch][n], SRC_LIVE);
+        }
+        for (int k = 0; k < w && keep < MAX_VOICE + 1; k++) {   /* notes it gained start now, held like the rest */
+            int have = 0;
+            for (int j = 0; j < keep; j++) if (kch[j] == wch[k] && kn[j] == wn[k]) have = 1;
+            if (have) continue;
+            sched_note(s, s->now, s->now + (int64_t)SR * 600, wch[k], wn[k], (int)(s->p[P_VELOCITY] * 0.85), SRC_LIVE);
+            kch[keep] = wch[k]; kn[keep++] = wn[k];
+        }
+        s->pad[p].n = keep;
+        memcpy(s->pad[p].ch, kch, (size_t)keep);
+        memcpy(s->pad[p].note, kn, (size_t)keep);
+    }
+}
+
+static void morph_loop(inst_t *s, int i, const voiced_t *old);
 static void morph_playing(inst_t *s, int i, const voiced_t *old) {
+    morph_pads(s);
+    morph_loop(s, i, old);
+}
+static void morph_loop(inst_t *s, int i, const voiced_t *old) {
     if (!s->playing || i < 0 || i != s->play_slot || i >= s->count) return;
     const voiced_t *nv = &s->vc[i];
     int64_t now = s->now, until = 0;
@@ -2364,7 +2401,13 @@ static void set_param(void *inst, const char *key, const char *val) {
         s->display_rev++;
         break;
     }
-    case P_VOICING: case P_LEAD: case P_OCTAVE: case P_BASS: revoice(s); s->display_rev++; break;
+    case P_VOICING: case P_LEAD: case P_OCTAVE: case P_BASS: {   /* desktop: the sounding chord morphs at once */
+        voiced_t old = s->play_slot >= 0 && s->play_slot < NSLOT ? s->vc[s->play_slot] : (voiced_t){0};
+        revoice(s);
+        morph_playing(s, s->play_slot, &old);
+        s->display_rev++;
+        break;
+    }
     case P_LEVEL: case P_SOUND: case P_TONE: case P_RELEASE: case P_SPACE: apply_synth_params(s); break;
     case P_SYNTH: if (!synth_on(s)) synth_all_off(&s->syn, 0); break;
     case P_MIDI_OUT:
@@ -2374,7 +2417,7 @@ static void set_param(void *inst, const char *key, const char *val) {
                     if (s->alsa_on[c][n]) { alsa_send(s, c, n, 0); s->alsa_on[c][n] = 0; }
             s->aq.n = 0;
         } else if (!synth_on(s)) synth_all_off(&s->syn, 0);
-        if (!quiet) say(s, 2500, v ? (s->p[P_SYNTH] ? "MIDI OUT ON + SYNTH" : "MIDI OUT ON - SYNTH MUTED") : "MIDI OUT OFF - SYNTH ON");
+        if (!quiet) say(s, 2500, v ? (s->p[P_SYNTH] ? "MIDI OUT ON + SYNTH" : "MIDI OUT ON - SYNTH OFF") : (s->p[P_SYNTH] ? "MIDI OUT OFF - SYNTH ON" : "MIDI OUT OFF - SYNTH OFF: NOTHING SOUNDS"));
         break;
     case P_LISTEN:
         s->p[P_FOLLOW] = v == 1;
@@ -2649,7 +2692,7 @@ static int get_param(void *inst, const char *key, char *buf, int len) {
         return snprintf(buf, len, "NOW: %s  (%d/%d)", nm, s->play_slot + 1, s->count) + 1;
     }
     if (!strcmp(key, "port")) {
-        if (!s->p[P_MIDI_OUT]) return snprintf(buf, len, "MIDI OUT IS OFF (CRUISE PAGE) - ONLY THE SYNTH PLAYS") + 1;
+        if (!s->p[P_MIDI_OUT]) return snprintf(buf, len, "MIDI OUT IS OFF - %s", s->p[P_SYNTH] ? "ONLY THE SYNTH PLAYS" : "NOTHING SOUNDS") + 1;
         return snprintf(buf, len, "%s  -  CH %d%s", seq_out_status(), s->p[P_CHANNEL], s->p[P_SYNTH] ? "  +  SYNTH" : "") + 1;
     }
     if (!strcmp(key, "export_status")) return snprintf(buf, len, "%s", s->export_msg[0] ? s->export_msg : "WRITES A .MID FILE MPC CAN LOAD") + 1;

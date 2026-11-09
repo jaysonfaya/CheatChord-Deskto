@@ -1,6 +1,7 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 #include "ParamsMeta.h"
+#include "Grooves.h"
 
 namespace cc {
 
@@ -303,8 +304,128 @@ void Processor::selectMidiPort (const juce::String& id)
     ui.setProperty ("midiPort", id, nullptr);
 }
 
+// ---------------------------------------------------------------- grooves
+static bool grooveFits (const Groove& g, const juce::String& style)
+{
+    return style.isNotEmpty() && juce::StringArray::fromTokens (g.styles, "|", "").contains (style);
+}
+
+static juce::String styleName (int i)
+{
+    if (auto* m = findParam ("style"))
+        if (i >= 0 && i < m->nopt) return m->opt[i];
+    return {};
+}
+
+int Processor::grooveForStyle (int style, int rhythm) const
+{
+    const auto sn = styleName (style);
+    if (groove >= 0 && grooveFits (GROOVES_LIB[groove], sn) && (rhythm < 0 || GROOVES_LIB[groove].rhythm == rhythm))
+        return groove;   // the current one already fits: it stays
+    int best = -1;
+    for (int i = 0; i < NUM_GROOVES_LIB; ++i)
+    {
+        const bool fits = grooveFits (GROOVES_LIB[i], sn), same = rhythm >= 0 && GROOVES_LIB[i].rhythm == rhythm;
+        if (rhythm >= 0 ? (same && (fits || best < 0)) : fits)
+        {
+            best = i;
+            if (rhythm < 0 || fits) break;
+        }
+    }
+    return best;
+}
+
+void Processor::applyGroove (int i, bool keepRhythmAndSwing)
+{
+    if (i < 0 || i >= NUM_GROOVES_LIB) return;
+    const auto& g = GROOVES_LIB[i];
+    groove = i;
+    ui.setProperty ("groove", juce::String (g.name), nullptr);
+    std::lock_guard<std::mutex> lk (eng.mutex());
+    auto* E = eng.api();
+    void* in = eng.raw();
+    auto put = [&] (const char* k, int v) { E->set_param (in, k, juce::String (v).toRawUTF8()); };
+    if (! keepRhythmAndSwing) { put ("rhythm", g.rhythm); put ("swing", g.swing); }
+    put ("rrate", g.rrate); put ("gate", g.gate); put ("push", g.push); put ("strum", g.strum);
+    put ("strum_mode", g.strumMode); put ("velocity", g.velocity); put ("humanize", g.humanize);
+    put ("rate", g.rate); put ("arp_oct", g.arpOct);
+    seenRhythm = eng.getIntU ("rhythm");
+}
+
+bool Processor::grooveEdited()
+{
+    if (groove < 0) return false;
+    const auto& g = GROOVES_LIB[groove];
+    std::lock_guard<std::mutex> lk (eng.mutex());
+    return eng.getIntU ("rhythm") != g.rhythm || eng.getIntU ("gate") != g.gate || eng.getIntU ("strum") != g.strum
+        || eng.getIntU ("humanize") != g.humanize || eng.getIntU ("velocity") != g.velocity || eng.getIntU ("swing") != g.swing;
+}
+
+void Processor::diceGroove()
+{
+    int style;
+    {
+        std::lock_guard<std::mutex> lk (eng.mutex());
+        style = eng.getIntU ("style");
+    }
+    const auto sn = styleName (style);
+    std::vector<int> pool;
+    if (grooveFollow)
+        for (int i = 0; i < NUM_GROOVES_LIB; ++i)
+            if (i != groove && grooveFits (GROOVES_LIB[i], sn)) pool.push_back (i);
+    if (pool.size() < 2 || dice.nextInt (4) == 0)   // now and then (or with LOCK) any groove: a surprise
+        for (int i = 0; i < NUM_GROOVES_LIB; ++i)
+            if (i != groove) pool.push_back (i);
+    const int pick = pool[(size_t) dice.nextInt ((int) pool.size())];
+    applyGroove (pick);
+    // a little variation, so the same groove rolled twice still feels new
+    const auto& g = GROOVES_LIB[pick];
+    std::lock_guard<std::mutex> lk (eng.mutex());
+    auto put = [&] (const char* k, int v) { eng.api()->set_param (eng.raw(), k, juce::String (v).toRawUTF8()); };
+    if (g.swing > 50) put ("swing", juce::jlimit (50, 75, g.swing + dice.nextInt (7) - 3));
+    put ("gate", juce::jlimit (10, 100, g.gate + dice.nextInt (13) - 6));
+    put ("humanize", juce::jlimit (0, 100, g.humanize + dice.nextInt (9) - 4));
+    put ("velocity", juce::jlimit (1, 127, g.velocity + dice.nextInt (9) - 4));
+}
+
+void Processor::setGrooveFollow (bool f)
+{
+    grooveFollow = f;
+    ui.setProperty ("grooveFollow", f, nullptr);
+}
+
+void Processor::watchGroove()
+{
+    int st, rh, pr;
+    {
+        std::lock_guard<std::mutex> lk (eng.mutex());
+        st = eng.getIntU ("style"); rh = eng.getIntU ("rhythm"); pr = eng.getIntU ("preset");
+    }
+    if (seenStyle == INT_MIN) { seenStyle = st; seenRhythm = rh; seenPreset = pr; return; }
+    const bool styleCh = st != seenStyle, rhCh = rh != seenRhythm, preCh = pr != seenPreset;
+    seenStyle = st; seenRhythm = rh; seenPreset = pr;
+    if (! styleCh && ! preCh) return;   // the user changed the rhythm by hand: theirs
+    if (grooveFollow)
+    {
+        if (rhCh)
+        {
+            // a preset (or artist) brought its own rhythm and swing: keep them, the groove's feel comes with it
+            const int i = grooveForStyle (st, rh);
+            if (i >= 0) applyGroove (i, true);
+        }
+        else if (styleCh)
+        {
+            const int i = grooveForStyle (st, -1);
+            if (i >= 0 && i != groove) applyGroove (i);
+        }
+    }
+    else if (groove >= 0 && rhCh)
+        applyGroove (groove);   // LOCK: the groove stays whatever the preset brings
+}
+
 void Processor::timerCallback()
 {
+    watchGroove();
     // the own port opens by itself once the DAW really plays this instance (not while it only scans the plugin):
     // a track can then take "CheatChord" as its MIDI input without anything set here. A saved choice wins.
     if (! portDecided && juce::Time::currentTimeMillis() - lastProcessMs.load() < 1000)
@@ -446,6 +567,13 @@ void Processor::setStateInformation (const void* data, int sizeInBytes)
     if (auto* u = xml->getChildByName ("UI"))
         ui = juce::ValueTree::fromXml (*u);
     syncParamsFromEngine();
+    {
+        const auto gname = ui.getProperty ("groove", "").toString();
+        groove = -1;
+        for (int i = 0; i < NUM_GROOVES_LIB; ++i) if (gname == GROOVES_LIB[i].name) groove = i;
+        grooveFollow = (bool) ui.getProperty ("grooveFollow", true);
+        seenStyle = INT_MIN;   // the loaded values are the starting point, not a change
+    }
     const auto want = ui.getProperty ("midiPort", "").toString();
     if (want.isEmpty()) return;   // never chosen: the own port opens by itself (timerCallback)
     portDecided = true;
