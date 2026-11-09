@@ -1,0 +1,30 @@
+name: Publish downloads
+# Puts the ZIPs of a finished build onto the branch "downloads" (plain git), for when the artifact download is blocked.
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: "Build run ID"
+        required: true
+permissions:
+  contents: write
+  actions: read
+jobs:
+  publish:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ inputs.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: art
+      - name: Zip and push to the downloads branch
+        run: |
+          mkdir out
+          for d in art/*/; do n=$(basename "$d"); (cd "$d" && zip -qr -y "$GITHUB_WORKSPACE/out/$n.zip" .); done
+          ls -la out
+          cd out
+          git init -q -b downloads
+          git config user.name "CheatChord build"; git config user.email "build@users.noreply.github.com"
+          git add -A && git commit -qm "Downloads from run ${{ inputs.run_id }}"
+          git push -qf "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" downloads
