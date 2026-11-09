@@ -77,10 +77,12 @@ jobs:
           done
           killall -9 AudioComponentRegistrar || true
           auval -v aumu ChtC JjDp | tail -3
+      - name: Zip (ditto keeps the executable bits and signatures; a plain artifact folder would lose them)
+        run: cd dist && ditto -c -k --keepParent CheatChord-macOS CheatChord-macOS.zip
       - uses: actions/upload-artifact@v4
         with:
           name: CheatChord-4.1.0-macOS
-          path: dist/CheatChord-macOS
+          path: dist/CheatChord-macOS.zip
       - name: pluginval (strictness 5)
         continue-on-error: true
         run: |
