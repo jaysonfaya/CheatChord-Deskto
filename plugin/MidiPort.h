@@ -43,6 +43,10 @@ private:
     juce::CriticalSection sendLock;
     // echo guard: notes sent recently
     double sentOn[128] {}, sentOff[128] {};
+    // what really went out (for the status line): notes, the most at once, echoes dropped
+    std::atomic<int> nOn { 0 }, maxAtOnce { 0 }, nEcho { 0 };
+    int held[16][128] {};
+    int holding = 0;
     int dropOff[128] {};
 };
 

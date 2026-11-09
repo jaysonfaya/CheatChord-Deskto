@@ -113,6 +113,8 @@ void MidiPort::select (const juce::String& id)
         portName = out->getName();
     }
     fifo.reset();
+    nOn = 0; maxAtOnce = 0; nEcho = 0; holding = 0;
+    for (auto& c : held) for (auto& x : c) x = 0;
     isOpen = true;
     startThread (juce::Thread::Priority::high);
 }
@@ -121,7 +123,11 @@ juce::String MidiPort::status() const
 {
     if (err.isNotEmpty()) return err;
     if (! isOpen.load()) return current.isEmpty() ? "Off: the chords go to the DAW's own MIDI routing only." : "Not open.";
-    return "Open: in your DAW, set a track's MIDI input to \"" + portName + "\".";
+    juce::String t = "Open: in your DAW, set a track's MIDI input to \"" + portName + "\".";
+    if (nOn.load() > 0)
+        t << "  Sent " << nOn.load() << " notes, up to " << maxAtOnce.load() << " at once"
+          << (nEcho.load() > 0 ? ", " + juce::String (nEcho.load()) + " echoes dropped" : juce::String()) << ".";
+    return t;
 }
 
 void MidiPort::push (double atMs, juce::uint8 a, juce::uint8 b, juce::uint8 c) noexcept
@@ -146,6 +152,7 @@ bool MidiPort::isEcho (int note, bool on, double nowMs) noexcept
     if (on && sentOn[note] > 0 && nowMs - sentOn[note] < 500.0 && nowMs - sentOn[note] > -50.0)
     {
         ++dropOff[note];
+        ++nEcho;
         return true;
     }
     if (! on && dropOff[note] > 0) { --dropOff[note]; return true; }
@@ -155,6 +162,13 @@ bool MidiPort::isEcho (int note, bool on, double nowMs) noexcept
 void MidiPort::sendNow (const juce::uint8* d, int n)
 {
     const juce::ScopedLock sl (sendLock);
+    if (n >= 3)
+    {
+        const int st = d[0] & 0xf0, ch = d[0] & 15, nt = d[1] & 127;
+        if (st == 0x90 && d[2] > 0) { ++nOn; if (held[ch][nt]++ == 0) ++holding; if (holding > maxAtOnce) maxAtOnce = holding; }
+        else if ((st == 0x80 || st == 0x90) && held[ch][nt] > 0) { if (--held[ch][nt] == 0) --holding; }
+        else if (st == 0xb0 && (d[1] == 123 || d[1] == 120)) { for (auto& x : held[ch]) { if (x > 0) --holding; x = 0; } }
+    }
 #if JUCE_WINDOWS
     if (te != nullptr) { te::send (te, (LPBYTE) d, (DWORD) n); return; }
 #endif
