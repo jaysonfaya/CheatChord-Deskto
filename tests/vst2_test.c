@@ -117,14 +117,17 @@ int main (int argc, char **argv) {
     a->d (a, 12, 0, 1, NULL, 0);          /* effMainsChanged on */
     run (a, 100, 512);
     /* GENERATE through its automatable action parameter (rising edge) */
-    int gen = -1, mode = -1, hum = -1;
+    int gen = -1, mode = -1, hum = -1, refs = -1;
     for (int i = 0; i < a->npar; i++) {
         char nm[64] = "";
         a->d (a, 8, i, 0, nm, 0);
         if (!strcmp (nm, "Action: Generat") || !strncmp (nm, "Action: Generate", 15)) gen = i;
         if (!strncmp (nm, "Play Mode", 8)) mode = i;
         if (!strcmp (nm, "Humanize")) hum = i;
+        if (!strcmp (nm, "Song Refs")) refs = i;
     }
+    /* GENERATE's own progressions for the grid check (not a song's loop with its own lengths) */
+    if (refs >= 0) { a->setP (a, refs, 0.0f); run (a, 4, 512); }
     CHECK (gen >= 0 && mode >= 0 && hum >= 0, "found Generate (%d), Play Mode (%d), Humanize (%d)", gen, mode, hum);
     if (gen >= 0) { a->setP (a, gen, 1.0f); run (a, 10, 512); a->setP (a, gen, 0.0f); run (a, 40, 512); }
     if (mode >= 0) a->setP (a, mode, 0.5f);   /* HOST */
