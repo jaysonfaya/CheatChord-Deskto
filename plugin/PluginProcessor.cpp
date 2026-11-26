@@ -12,6 +12,7 @@ static const char* const HOST_VALUES[] = {
     "strum", "strum_mode", "swing", "gate", "velocity", "humanize", "mute",
     "voicing", "lead", "octave", "bass",
     "sound", "level", "tone", "release", "space", "midi_out", "synth", "channel", "bass_ch",
+    "morph", "song_refs",   // desktop 2026-11: appended (host parameter order = their index)
 };
 static const char* const HOST_TRIGGERS[] = {
     "generate", "cruise", "reroll", "add", "undo", "redo", "delete", "clear", "stop", "panic",

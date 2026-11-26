@@ -116,6 +116,10 @@ static void playTest (juce::AudioPluginInstance& p, double sr, int block)
     std::printf ("---- %g Hz, %d frames\n", sr, block);
     Run r (p, sr, block);
     r.seconds (1.0);   // the quiet time after loading
+    // the grid checks below want GENERATE's own progressions (4 chords, equal lengths), not a song's loop
+    if (auto* q = paramNamed (p, "Song Refs")) q->setValueNotifyingHost (0.0f);
+    else std::printf ("no parameter Song Refs\n");
+    r.blocks (4);
     if (slotCount (engineState (p)) == 0)
     {
         trigger (p, "Action: Generate", r);
