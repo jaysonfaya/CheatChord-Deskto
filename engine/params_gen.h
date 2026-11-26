@@ -341,7 +341,9 @@ enum {
     P_SAVE_SLOT_NEXT = 337,
     P_STRUM_MODE = 338,
     P_SLOT_REV = 339,
-    NUM_P = 340
+    P_MORPH = 340,
+    P_SONG_REFS = 341,
+    NUM_P = 342
 };
 typedef struct { const char *key; int min, max, def, kind; } pdef_t;   /* kind 0 value, 1 trigger, 2 text */
 static const pdef_t PDEF[NUM_P] = {
@@ -685,6 +687,8 @@ static const pdef_t PDEF[NUM_P] = {
     {"save_slot_next", 0, 1, 0, 1},
     {"strum_mode", 0, 4, 0, 0},
     {"slot_rev", 0, 1, 0, 0},
+    {"morph", 0, 2, 1, 0},
+    {"song_refs", 0, 100, 50, 0},
 };
 static const char *const TEMPLATE_NAMES[] = {"Axis Pop", "50s Doo-Wop", "Sad Pop", "Royal Road", "Jazz ii-V-I", "Turnaround", "Neo Soul Descent", "Backdoor", "Mixolydian Rock", "Gospel Walk", "Canon", "Major-Minor IV", "70s Soul Lift", "Chromatic Soul", "Brit Pop Bridge", "Lo-Fi Sway", "R&B Slow Jam", "Andalusian", "Epic Minor", "Deep House", "Dorian Vamp", "Minor ii-V-i", "Line Cliche", "80s Funk Minor", "Dark Trap", "Cinematic Rise"};
 static const char *const RHYTHM_NAMES[] = {"Sustain", "Whole Notes", "Half Notes", "Quarters", "Eighths", "Offbeats", "Charleston", "Tresillo", "Funk 16ths", "Garage", "Neo Soul Lazy", "Arp Up", "Arp Down", "Arp Up/Down", "Arp Random", "Broken Chord", "Boom Bap Stab", "Trap Pad", "Drill Slide", "Dembow", "Afrobeats", "Amapiano", "Deep House", "2-Step", "Disco Chops", "Funk Hits", "Gospel Shout", "Bossa Comp", "Samba", "Salsa Montuno", "Son Clave", "Reggae One Drop", "Ska Upstroke", "Dancehall", "Motown Beat", "Doo-Wop 12/8", "Blues Shuffle", "Country Boom", "Rock Drive", "Pop Ballad", "Synthwave 16", "EDM Pump", "Future Chops", "Trance Gate", "Lo-Fi Late", "Habanera", "Jersey Club", "Trap Triplets", "Afro House"};

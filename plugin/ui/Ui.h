@@ -185,6 +185,9 @@ class SearchList : public juce::Component, public Live, private juce::ListBoxMod
 {
 public:
     SearchList (Ctx&, const char* key, const juce::String& title, std::function<juce::String (int)> detail = {});
+    // a list not bound to an engine option: its own names, what a pick does, which one is current
+    SearchList (Ctx&, const juce::StringArray& names, const juce::String& title, std::function<void (int)> picked,
+                std::function<int()> current, std::function<juce::String (int)> detail = {});
     void update() override;
     void paint (juce::Graphics&) override;
     void resized() override;
@@ -207,6 +210,8 @@ private:
     juce::StringArray options;
     std::vector<int> rows;
     std::function<juce::String (int)> detail;
+    std::function<void (int)> pickFn;
+    std::function<int()> curFn;
     int v = -1;
     juce::TextEditor search;
     juce::ListBox list;

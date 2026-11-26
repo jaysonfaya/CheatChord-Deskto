@@ -160,16 +160,23 @@ private:
     juce::Rectangle<int> facLab, usrLab;
 };
 
-class LibraryPanel : public Panel
+class LibraryPanel : public Panel, public Live
 {
 public:
     explicit LibraryPanel (Ctx&);
+    void update() override;
     void resized() override;
     void paint (juce::Graphics&) override;
 private:
-    SearchList list;
+    void showTab (int t);
+    int tab = 1;                    // 0 formulas, 1 songs
+    Tile tabF, tabS;
+    SearchList list, songs;
     Line chords;
+    Knob refs;
     Tile load { Tile::Primary };
+    juce::String refInfo;
+    juce::Rectangle<int> infoR;
 };
 
 class ProfilePanel : public Panel
@@ -189,10 +196,14 @@ public:
     void update() override;
     void resized() override;
 private:
-    Bar mode;
+    Bar mode, morph;
     Tile play { Tile::Primary }, stop { Tile::Action }, cruise { Tile::Primary }, generate { Tile::Primary },
          undo { Tile::Action }, redo { Tile::Action }, reroll { Tile::Action };
+    Tile rec { Tile::Primary }, countIn, recLen, dragTake { Tile::Action };
     Line now, help;
+    juce::String recShown;
+    juce::Rectangle<int> recStatusR;
+    void paint (juce::Graphics&) override;
 };
 
 class HelpPanel : public Panel

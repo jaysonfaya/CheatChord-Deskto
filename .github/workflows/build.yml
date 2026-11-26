@@ -106,7 +106,7 @@ jobs:
             libgl1-mesa-dev xvfb
       - name: Engine test (ASan/UBSan, the MPC build's checks)
         run: |
-          SRC="engine/chordpilot.c engine/harmony.c engine/theory.c engine/voicing.c engine/synth.c engine/seq_out.c engine/library.c engine/artists.c engine/refs.c engine/compat.c"
+          SRC="engine/chordpilot.c engine/harmony.c engine/theory.c engine/voicing.c engine/synth.c engine/seq_out.c engine/library.c engine/artists.c engine/refs.c engine/songrefs.c engine/compat.c"
           gcc -O1 -g -fsanitize=address,undefined -std=gnu11 -Iengine $SRC tests_engine/engine_test.c -lm -lpthread -o /tmp/cc_engine_test
           (cd /tmp && ./cc_engine_test | tail -3)
       - name: Synth test (sound changes under ringing notes, levels, CPU)

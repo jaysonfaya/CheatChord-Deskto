@@ -552,6 +552,22 @@ SearchList::SearchList (Ctx& c, const char* k, const juce::String& t, std::funct
     filter();
 }
 
+SearchList::SearchList (Ctx& c, const juce::StringArray& names, const juce::String& t, std::function<void (int)> picked,
+                        std::function<int()> current, std::function<juce::String (int)> d)
+    : Live (c), key (nullptr), title (t), options (names), detail (std::move (d)), pickFn (std::move (picked)), curFn (std::move (current))
+{
+    search.setTextToShowWhenEmpty ("Search " + title.toLowerCase() + "...", pal().faint);
+    search.setFont (font (17.0f, 0));
+    search.addListener (this);
+    search.setIndents (8, 5);
+    list.setModel (this);
+    list.setRowHeight (28);
+    list.setOutlineThickness (0);
+    addAndMakeVisible (search);
+    addAndMakeVisible (list);
+    filter();
+}
+
 void SearchList::filter()
 {
     rows.clear();
@@ -576,7 +592,7 @@ void SearchList::showCurrent()
 
 void SearchList::update()
 {
-    int nv = ctx.val (key);
+    int nv = curFn ? curFn() : key != nullptr ? ctx.val (key) : -1;
     if (nv != v) { v = nv; showCurrent(); list.repaint(); }
 }
 
@@ -625,7 +641,8 @@ void SearchList::pick (int row)
 {
     if (row < 0 || row >= (int) rows.size()) return;
     v = rows[(size_t) row];
-    ctx.setValue (key, v);
+    if (pickFn) pickFn (v);
+    else if (key != nullptr) ctx.setValue (key, v);
     list.repaint();
     if (onPicked) onPicked();
 }

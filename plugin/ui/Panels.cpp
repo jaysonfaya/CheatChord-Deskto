@@ -1,5 +1,8 @@
 #include "Panels.h"
+#include <map>
 #include "../Grooves.h"
+#include "../../engine/songrefs.h"
+#include "../Recorder.h"
 #include "../PluginProcessor.h"
 
 namespace cc::ui {
@@ -1013,28 +1016,113 @@ void PresetsPanel::paint (juce::Graphics& g)
 }
 
 // ================================================================ Library (progression templates)
-LibraryPanel::LibraryPanel (Ctx& c) : Panel ("Progression library"), list (c, "template", "Formula"), chords (c, "tpl_info", 17.0f)
+static juce::StringArray songNames()
 {
+    juce::StringArray a;
+    std::map<juce::String, int> seen;   // a song with several loops: "#2", "#3" ...
+    for (int i = 0; i < NUM_SONGREFS; ++i)
+    {
+        const auto& R = SONGREFS[i];
+        juce::String n = R.kind == 1 || ! R.artist[0] ? juce::String ("LIBRARY: ") + R.title : juce::String (R.artist) + " - " + R.title;
+        const int k = ++seen[n];
+        a.add (k > 1 ? n + "  #" + juce::String (k) : n);
+    }
+    return a;
+}
+
+LibraryPanel::LibraryPanel (Ctx& c)
+    : Panel ("Progression library"), Live (c), list (c, "template", "Formula"),
+      songs (c, songNames(), "Songs", [&c] (int i) { c.setValue ("ref_pick", i); }, [&c] { return c.val ("ref_pick"); },
+             [] (int i)
+             {
+                 const auto& R = SONGREFS[i];
+                 return juce::String (R.minor ? "MINOR " : "MAJOR ") + juce::String (R.n) + " CH";
+             }),
+      chords (c, "tpl_info", 17.0f), refs (c, "song_refs", "SONG REFS", [] (int v) { return juce::String (v) + " %"; })
+{
+    ctx.model.want ("ref_info");
+    ctx.model.want ("ref_pick");
     chords.colour = pal().gold;
+    tabF.set ("FORMULAS", "26 classics");
+    tabS.set ("SONGS", juce::String (NUM_SONGREFS) + " real loops");
+    tabF.setHelp ("Formulas", "The classic progression formulas (I-V-vi-IV, ii-V-I ...), in your key.");
+    tabS.setHelp ("Songs", juce::String (NUM_SONGREFS) + " chord loops of real songs (Billboard charts 1958-1991, public-domain classics) "
+                  "and named progressions, as in MIDI CONDUCTA. Search by artist or title. LOAD writes the loop in your key, "
+                  "with its chord lengths and slash basses.");
+    tabF.onClick = [this] (const juce::MouseEvent&) { showTab (0); };
+    tabS.onClick = [this] (const juce::MouseEvent&) { showTab (1); };
+    refs.setHelp ("How often GENERATE takes a real song's loop that fits the style (the rest it writes itself). 0 % = never.");
     load.set ("LOAD INTO PROGRESSION");
-    load.setHelp ("Writes the formula's chords in your key into the progression (UNDO brings the old one back).");
-    load.onClick = [&c] (const juce::MouseEvent&) { c.tap ("load"); };
-    addAndMakeVisible (list);
-    addAndMakeVisible (chords);
-    addAndMakeVisible (load);
+    load.onClick = [this] (const juce::MouseEvent&) { ctx.tap (tab == 1 ? "ref_load" : "load"); };
+    hintAll (ctx, { &tabF, &tabS, &load });
+    for (auto* x : std::initializer_list<juce::Component*> { &tabF, &tabS, &list, &songs, &chords, &refs, &load })
+        addAndMakeVisible (x);
+    showTab (1);
+}
+
+void LibraryPanel::showTab (int t)
+{
+    tab = t;
+    tabF.setOn (t == 0); tabS.setOn (t == 1);
+    list.setVisible (t == 0); chords.setVisible (t == 0);
+    songs.setVisible (t == 1); refs.setVisible (t == 1);
+    load.setHelp (t == 1 ? "Writes the song's loop in your key into the progression (UNDO brings the old one back). While it plays, "
+                           "the new progression starts as set in PLAY -> NEW PROGRESSION."
+                         : "Writes the formula's chords in your key into the progression (UNDO brings the old one back).");
+    resized();
+    repaint();
+}
+
+void LibraryPanel::update()
+{
+    auto t = ctx.text ("ref_info");
+    if (t != refInfo) { refInfo = t; repaint (infoR); }
 }
 
 void LibraryPanel::resized()
 {
     auto r = content();
+    auto tb = take (r, U (44), 8);
+    const int w = (tb.getWidth() - 8) / 2;
+    tabF.setBounds (tb.removeFromLeft (w));
+    tb.removeFromLeft (8);
+    tabS.setBounds (tb);
     load.setBounds (r.removeFromBottom (U (40)));
     r.removeFromBottom (U (8));
-    chords.setBounds (r.removeFromBottom (U (34)));
-    r.removeFromBottom (U (8));
-    list.setBounds (r);
+    if (tab == 0)
+    {
+        chords.setBounds (r.removeFromBottom (U (34)));
+        r.removeFromBottom (U (8));
+        list.setBounds (r);
+        infoR = {};
+    }
+    else
+    {
+        auto bottom = r.removeFromBottom (U (74));
+        r.removeFromBottom (U (8));
+        refs.setBounds (bottom.removeFromRight (juce::jmin (U (110), bottom.getWidth() / 4)));
+        bottom.removeFromRight (U (8));
+        infoR = bottom;
+        songs.setBounds (r);
+    }
 }
 
-void LibraryPanel::paint (juce::Graphics& g) { Panel::paint (g); }
+void LibraryPanel::paint (juce::Graphics& g)
+{
+    Panel::paint (g);
+    if (tab != 1 || infoR.isEmpty()) return;
+    auto parts = juce::StringArray::fromTokens (refInfo, "~", "");
+    auto r = infoR.toFloat();
+    g.setColour (pal().tile);
+    g.fillRoundedRectangle (r, 8.0f);
+    r = r.reduced (10.0f, 4.0f);
+    if (parts.size() >= 3)
+    {
+        fitText (g, parts[0], r.removeFromTop (r.getHeight() * 0.36f), 16.0f, 2, pal().gold, juce::Justification::centredLeft, 11.0f);
+        fitText (g, parts[2], r.removeFromTop (r.getHeight() * 0.55f), 17.0f, 1, pal().text, juce::Justification::centredLeft, 11.0f);
+        fitText (g, parts[1], r, 13.0f, 0, pal().dim, juce::Justification::centredLeft, 10.0f);
+    }
+}
 
 // ================================================================ Profile (the artist / producer library)
 ProfilePanel::ProfilePanel (Ctx& c) : Panel ("Artist & producer profile"), kind (c, "lib_kind", { "ARTIST", "PRODUCER" }, 2)
@@ -1060,7 +1148,8 @@ void ProfilePanel::resized()
 
 // ================================================================ Transport (big)
 TransportPanel::TransportPanel (Ctx& c)
-    : Panel ("Play"), Live (c), mode (c, "listen", { "OFF", "HOST", "LISTEN" }, 3), now (c, "now", 17.0f),
+    : Panel ("Play"), Live (c), mode (c, "listen", { "OFF", "HOST", "LISTEN" }, 3),
+      morph (c, "morph", { "NOW", "NEXT BAR", "END OF LOOP" }, 3), now (c, "now", 17.0f),
       help (c, "mode_help", 14.0f, juce::Justification::centred, 2)
 {
     ctx.model.want ("run");
@@ -1074,6 +1163,46 @@ TransportPanel::TransportPanel (Ctx& c)
     undo.set ("UNDO"); undo.onClick = [this] (const juce::MouseEvent&) { ctx.tap ("undo"); };
     redo.set ("REDO"); redo.onClick = [this] (const juce::MouseEvent&) { ctx.tap ("redo"); };
     reroll.set ("REROLL IDEAS"); reroll.onClick = [this] (const juce::MouseEvent&) { ctx.tap ("reroll"); };
+    morph.setHelp ("New progression", "When GENERATE, a template or a song makes a new progression while it plays: NOW = at once (from "
+                   "the next chord), NEXT BAR = it starts with its first chord on the next bar line, END OF LOOP = when the loop "
+                   "comes round. Notes of the old one end exactly there.");
+    rec.onClick = [this] (const juce::MouseEvent&) { ctx.proc.recorder().toggle(); update(); };
+    rec.setHelp ("REC", "Records what CheatChord plays (pads, keys, the progression) as a MIDI take. With COUNT-IN you hear one bar "
+                 "of clicks first (with the DAW playing, the take starts on a bar line). Press again to stop. The take is saved in "
+                 "Documents / JJ DA PLUG / CheatChord / MIDI Exports - DRAG TAKE puts it on a track.");
+    countIn.onClick = [this] (const juce::MouseEvent&)
+    {
+        auto& r = ctx.proc.recorder();
+        ctx.proc.setRecOptions (! r.countIn, r.lengthBars);
+        update();
+    };
+    countIn.setHelp ("Count-in", "ON: one bar (4 clicks, the first one higher) before REC starts recording.");
+    recLen.onClick = [this] (const juce::MouseEvent&)
+    {
+        auto& r = ctx.proc.recorder();
+        ctx.proc.setRecOptions (r.countIn, r.lengthBars == 0 ? 4 : r.lengthBars == 4 ? 8 : r.lengthBars == 8 ? 16 : 0);
+        update();
+    };
+    recLen.setHelp ("Take length", "FREE: records until you press REC again. 4 / 8 / 16 BARS: stops by itself.");
+    dragTake.set ("DRAG TAKE", "into your DAW");
+    dragTake.setHelp ("Drag take", "Hold the mouse button down here and drag the last take onto a track. Right-click: open the folder.");
+    dragTake.onDragStart = [this] (const juce::MouseEvent&)
+    {
+        auto f = ctx.proc.recorder().lastTake();
+        if (f.existsAsFile())
+            juce::DragAndDropContainer::performExternalDragDropOfFiles ({ f.getFullPathName() }, false, this);
+        else
+            ctx.help ("Drag take", "No take yet: press REC, play, press REC again.");
+    };
+    dragTake.onClick = [this] (const juce::MouseEvent& e)
+    {
+        auto f = ctx.proc.recorder().lastTake();
+        if (e.mods.isPopupMenu()) { (f.existsAsFile() ? f.getParentDirectory() : juce::File (cc_docs_root()).getChildFile ("MIDI Exports")).startAsProcess(); return; }
+        ctx.help ("Drag take", f.existsAsFile() ? "Hold the mouse button down and drag it onto a track: " + f.getFileName() : "No take yet: press REC, play, press REC again.");
+    };
+    hintAll (ctx, { &rec, &countIn, &recLen, &dragTake });
+    for (auto* x : std::initializer_list<juce::Component*> { &morph, &rec, &countIn, &recLen, &dragTake })
+        addAndMakeVisible (x);
     now.colour = pal().gold;
     help.colour = pal().dim;
     hintAll (ctx, { &play });
@@ -1085,23 +1214,63 @@ void TransportPanel::update()
 {
     play.setHot (ctx.model.playSlot >= 0);
     play.set (ctx.val ("run") ? "PLAYING" : "PLAY");
+    auto& r = ctx.proc.recorder();
+    const int ph = r.phase();
+    rec.set (ph == Recorder::Recording ? "STOP REC" : ph == Recorder::CountIn || ph == Recorder::Request ? "COUNT-IN..." : "REC",
+             ph == Recorder::Idle ? "record a take" : "press to stop", ph != Recorder::Idle);
+    rec.setHot (ph == Recorder::Recording);
+    countIn.set ("COUNT-IN", r.countIn ? "1 BAR" : "OFF", r.countIn);
+    recLen.set (r.lengthBars == 0 ? "FREE" : juce::String (r.lengthBars) + " BARS", "take length");
+    auto st = r.status();
+    if (st != recShown) { recShown = st; now.setVisible (st.isEmpty()); repaint (recStatusR); }
+}
+
+void TransportPanel::paint (juce::Graphics& g)
+{
+    Panel::paint (g);
+    if (recStatusR.isEmpty() || recShown.isEmpty()) return;
+    g.setColour (pal().tile);
+    g.fillRoundedRectangle (recStatusR.toFloat(), 6.0f);
+    fitText (g, recShown, recStatusR.toFloat(), 15.0f, 2, ctx.proc.recorder().phase() == Recorder::Recording ? pal().gold : pal().dim,
+             juce::Justification::centred, 10.0f);
 }
 
 void TransportPanel::resized()
 {
     auto r = content();
     const int H = r.getHeight();
-    mode.setBounds (take (r, juce::jlimit (U (28), U (44), H / 7), 8));
-    const bool showHelp = H > 260;
+    {
+        // play mode and NEW PROGRESSION side by side when there is room
+        auto top = take (r, juce::jlimit (U (28), U (44), H / 7), 8);
+        if (r.getWidth() > U (420))
+        {
+            const int w = (top.getWidth() - U (12)) / 2;
+            mode.setBounds (top.removeFromLeft (w));
+            top.removeFromLeft (U (12));
+            morph.setBounds (top);
+        }
+        else
+        {
+            mode.setBounds (top);
+            morph.setBounds (take (r, juce::jlimit (U (28), U (40), H / 8), 8));
+        }
+    }
+    const bool showHelp = H > U (460);
     help.setVisible (showHelp);
     if (showHelp) help.setBounds (take (r, U (38), 8));
     auto nowR = r.removeFromBottom (juce::jlimit (U (24), U (34), H / 9));
     r.removeFromBottom (U (8));
     now.setBounds (nowR);
-    const int rowH = (r.getHeight() - 16) / 3;
+    recStatusR = nowR;   // REC's state takes the line while it has something to say
+    // four rows where they stay big; else UNDO / REDO / REROLL go (the progression and ideas panels have them too)
+    const bool undoRow = (r.getHeight() - 24) / 4 >= U (44);
+    for (auto* t : { &undo, &redo, &reroll }) t->setVisible (undoRow);
+    const int rows = undoRow ? 4 : 3;
+    const int rowH = (r.getHeight() - 8 * (rows - 1)) / rows;
     grid ({ &play, &stop }, take (r, rowH, 8), 2, 10);
     grid ({ &cruise, &generate }, take (r, rowH, 8), 2, 10);
-    grid ({ &undo, &redo, &reroll }, r, 3, 10);
+    if (undoRow) grid ({ &undo, &redo, &reroll }, take (r, rowH, 8), 3, 10);
+    grid ({ &rec, &countIn, &recLen, &dragTake }, r, 4, 10);
 }
 
 // ================================================================ Help

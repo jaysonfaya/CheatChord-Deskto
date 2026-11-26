@@ -3,6 +3,7 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include "../plugin/PluginProcessor.h"
 #include "../plugin/PluginEditor.h"
+#include "../plugin/ui/Layouts.h"
 
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter();
 
@@ -87,6 +88,19 @@ int main (int argc, char** argv)
     shot (*ed, out.getChildFile ("studio_text150.png"));
     ed->setTextSize (1.25f);
     shot (*ed, out.getChildFile ("sound_panel.png"));
+    ed->popOut ("library");   // the song references (a floating window in the editor)
+    ed->setHelper (false);
+    std::function<void (juce::Component&)> grow = [&] (juce::Component& c)
+    {
+        for (auto* ch : c.getChildren())
+        {
+            if (dynamic_cast<cc::ui::FloatPanel*> (ch) != nullptr) ch->setBounds (300, 120, 1000, 760);
+            else grow (*ch);
+        }
+    };
+    grow (*ed);
+    shot (*ed, out.getChildFile ("library_songs.png"));
+    ed->dock ("library");
     ed->setZoom (0.8f);
     ed->setSize (1280, 800);
     shot (*ed, out.getChildFile ("studio_80pct.png"));

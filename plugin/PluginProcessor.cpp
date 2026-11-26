@@ -233,6 +233,8 @@ void Processor::process (juce::AudioBuffer<F>& buffer, juce::MidiBuffer& midi)
         feed ((*it).getMessage());
     sinkBase = 0;
 
+    // REC: what was played goes into the take; the count-in click into the audio
+    rec.process (outMidi, n, sr, ppq, tempo > 0 ? tempo : bpm.load(), playing, L, R);
     // the notes sent in this block replace the input (an instrument consumes what it plays); the own port gets them too
     toPort (outMidi, nowMs);
     midi.swapWith (outMidi);
@@ -423,8 +425,17 @@ void Processor::watchGroove()
         applyGroove (groove);   // LOCK: the groove stays whatever the preset brings
 }
 
+void Processor::setRecOptions (bool countIn, int lengthBars)
+{
+    rec.countIn = countIn;
+    rec.lengthBars = lengthBars;
+    ui.setProperty ("recCountIn", countIn, nullptr);
+    ui.setProperty ("recBars", lengthBars, nullptr);
+}
+
 void Processor::timerCallback()
 {
+    rec.poll();
     watchGroove();
     // the own port opens by itself once the DAW really plays this instance (not while it only scans the plugin):
     // a track can then take "CheatChord" as its MIDI input without anything set here. A saved choice wins.
@@ -572,6 +583,8 @@ void Processor::setStateInformation (const void* data, int sizeInBytes)
         groove = -1;
         for (int i = 0; i < NUM_GROOVES_LIB; ++i) if (gname == GROOVES_LIB[i].name) groove = i;
         grooveFollow = (bool) ui.getProperty ("grooveFollow", true);
+        rec.countIn = (bool) ui.getProperty ("recCountIn", true);
+        rec.lengthBars = (int) ui.getProperty ("recBars", 0);
         seenStyle = INT_MIN;   // the loaded values are the starting point, not a change
     }
     const auto want = ui.getProperty ("midiPort", "").toString();

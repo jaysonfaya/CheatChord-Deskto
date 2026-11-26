@@ -8,6 +8,7 @@
 #include <string>
 #include "CCEngine.h"
 #include "MidiPort.h"
+#include "Recorder.h"
 
 namespace cc {
 
@@ -68,6 +69,8 @@ public:
     void selectMidiPort (const juce::String& id);
     bool hostPlaying() const noexcept { return playingNow.load(); }
     // the groove library (Grooves.h): message thread
+    Recorder& recorder() noexcept { return rec; }
+    void setRecOptions (bool countIn, int lengthBars);   // remembered in the project
     int grooveIndex() const noexcept { return groove; }          // -1: none chosen yet
     bool grooveEdited();                                        // the settings differ from the chosen groove
     void applyGroove (int i, bool keepRhythmAndSwing = false);
@@ -98,6 +101,7 @@ private:
     std::atomic<bool> playingNow { false };
     std::atomic<juce::int64> lastProcessMs { 0 };
     bool portDecided = false;
+    Recorder rec;
     int groove = -1;
     bool grooveFollow = true;
     int seenStyle = INT_MIN, seenRhythm = INT_MIN, seenPreset = INT_MIN;

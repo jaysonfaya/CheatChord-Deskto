@@ -53,3 +53,9 @@ JUCE 8.0.10 wird automatisch geladen. Mit `-DCC_JUCE_DIR=<pfad>` nimmt der Build
   JUCE-Lizenz.
 - Titillium Web: SIL OFL (`assets/fonts/OFL.txt`).
 - VST ist eine Marke der Steinberg Media Technologies GmbH.
+
+## Credits: song references
+The SONGS library and GENERATE's song references use chord loops from the McGill Billboard Project chord annotations
+(CC0; J. A. Burgoyne, J. Wild, I. Fujinaga, "An Expert Ground-Truth Set for Audio Chord Recognition and Music Analysis",
+ISMIR 2011), phrases from public-domain Mutopia Project scores, and named progressions, as prepared for MIDI CONDUCTA
+3.3 (`tools/song_refs.py`). Only chord changes are used.

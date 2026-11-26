@@ -7,6 +7,7 @@
 #include "voicing.h"
 #include "harmony.h"
 #include "refs.h"
+#include "songrefs.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -69,6 +70,8 @@ int main(void) {
     run_ms(800);   /* quiet period after create */
     set("panel", "0");   /* the IDEAS info line (the browser is the default panel) */
     set("loop_sync", "0");   /* the 1.x / 2.x checks below are about CHORD LENGTH (manual); LOOP SYNC has its own */
+    set("song_refs", "0");   /* desktop: GENERATE's song references and NEW PROGRESSION have their own checks at the end */
+    set("morph", "0");
     /* MIDI OUT off by default: taps sound on the synth only */
     { int b0 = nout; tap("prog_1"); CHECK(nout == b0, "MIDI OUT off: nothing on the port"); }
     set("midi_out", "1"); run_ms(30);
@@ -850,6 +853,87 @@ int main(void) {
     playing = 0;
     double rms = sqrt(rms_acc / (rms_n ? rms_n : 1)) / 32768.0;
     CHECK(rms > 0.01 && peak < 32767, "synth: rms %.3f, peak %d (no clipping)", rms, peak);
+
+    /* ---- desktop: SONG REFS (real songs' loops from MIDI CONDUCTA) */
+    {
+        int slash = 0, minor = 0, eight = 0, bad = 0;
+        for (int i = 0; i < NUM_SONGREFS; i++) {
+            const songref_t *R = &SONGREFS[i];
+            if (R->n < 2 || R->n > 8 || R->bars < 11 || R->bars > 13 || !R->styles) bad++;
+            for (int k = 0; k < R->n; k++) {
+                if (R->c[k].q < 0 || R->c[k].q >= NUM_QUALITIES || R->c[k].deg < 0 || R->c[k].deg > 11 || R->c[k].len < 0 || R->c[k].len > 2) bad++;
+                if (R->c[k].bass >= 0) slash = 1;
+            }
+            minor += R->minor; eight += R->n > 4;
+        }
+        CHECK(NUM_SONGREFS > 1000 && !bad && slash && minor > 100 && eight > 100,
+              "song refs: %d loops, all valid (%d bad), with slash chords, %d minor, %d with more than 4 chords", NUM_SONGREFS, bad, minor, eight);
+        set("song_refs", "100");
+        set("style", "2");   /* 70s Soul */
+        int likes = 0;
+        for (int g = 0; g < 8; g++) {
+            tap("generate"); run_ms(300);
+            if (strstr(get("hist_1"), "LIKE") || strstr(get("info"), "LIKE")) likes++;
+        }
+        int filled = 0;
+        for (int k = 1; k <= 8; k++) { char key[8]; snprintf(key, sizeof key, "prog_%d", k); if (bare(key)[0]) filled++; }
+        CHECK(likes >= 1 && filled >= 2, "GENERATE with SONG REFS 100: real-song loops (%d of 8 said LIKE), %d chords", likes, filled);
+        /* load one by hand: the browser's pick + LOAD */
+        int pick = -1;
+        for (int i = 0; i < NUM_SONGREFS && pick < 0; i++) if (SONGREFS[i].n == 4 && SONGREFS[i].bars == 12) pick = i;
+        seti("ref_pick", pick);
+        const char *inf = get("ref_info");
+        CHECK(strstr(inf, SONGREFS[pick].title) != NULL, "ref_info names the song (%s)", inf);
+        set("ref_load", "1"); run_ms(100);
+        int lb = atoi(get("bars")), lc = cp_test_count(S);
+        CHECK(lc == 4 && lb == SONGREFS[pick].bars, "LOAD: the song's 4 chords (%d), its chord length (%d)", lc, lb);
+        set("song_refs", "0");
+    }
+
+    /* ---- desktop: NEW PROGRESSION = NEXT BAR: a new progression while playing starts on the next bar line with its
+     * first chord, nothing of the old one sounds after it */
+    {
+        set("rhythm", "0"); set("bars", "12"); set("midi_out", "1"); set("morph", "1"); set("listen", "1");
+        int pick = -1, pick2 = -1;
+        for (int i = 0; i < NUM_SONGREFS && pick2 < 0; i++)
+            if (SONGREFS[i].n == 4 && SONGREFS[i].bars == 12 && SONGREFS[i].c[0].len == 1) { if (pick < 0) pick = i; else if (SONGREFS[i].c[0].deg != SONGREFS[pick].c[0].deg) pick2 = i; }
+        seti("ref_pick", pick); set("ref_load", "1"); run_ms(50);
+        playing = 1; ppq = 0;
+        long bar = cur_frame + (long)(4 * 60.0 / bpm * 44100);
+        while (ppq < 1.5) block();   /* in bar 1 */
+        seti("ref_pick", pick2); set("ref_load", "1");
+        CHECK(atoi(get("pend")) == 1, "NEXT BAR: the new progression waits");
+        long t0 = cur_frame;
+        int s0 = nout;
+        while (ppq < 5.0) block();
+        int onsBefore = 0, onsAt = 0, offsAt = 0, rootAt = 0, key = atoi(get("key"));
+        for (int i = s0; i < nout; i++) {
+            if (OUT[i].note >= 128) continue;
+            long f = OUT[i].frame;
+            if (OUT[i].vel > 0 && f < bar - 128) onsBefore++;
+            if (OUT[i].vel > 0 && f >= bar - 128 && f <= bar + 256) { onsAt++; if (OUT[i].note % 12 == (key + SONGREFS[pick2].c[0].deg) % 12) rootAt = 1; }
+            if (OUT[i].vel == 0 && f >= bar - 128 && f <= bar + 256) offsAt++;
+        }
+        (void)t0; (void)offsAt;
+        CHECK(atoi(get("pend")) == 0 && onsBefore == 0 && onsAt >= 3 && rootAt,
+              "NEXT BAR: the new progression's first chord starts on the bar line (%d notes, %d before it)", onsAt, onsBefore);
+        /* NOW: at once */
+        set("morph", "0");
+        seti("ref_pick", pick); set("ref_load", "1");
+        CHECK(atoi(get("pend")) == 0, "NOW: no waiting");
+        /* END OF LOOP: waits for the loop's start */
+        set("morph", "2");
+        seti("ref_pick", pick2); set("ref_load", "1");
+        int waited = atoi(get("pend"));
+        double asked = ppq;
+        while (ppq < asked + 40.0 && atoi(get("pend"))) block();
+        CHECK(waited && !atoi(get("pend")) && ppq - asked > 0.5, "END OF LOOP: waits for the next pass of the loop (%.2f beats)", ppq - asked);
+        /* stopped with one waiting: it comes at once */
+        seti("ref_pick", pick); set("ref_load", "1");
+        playing = 0; run_ms(100);
+        CHECK(!atoi(get("pend")), "STOP with a new progression waiting: it is taken");
+        set("morph", "0"); set("listen", "0");
+    }
 
     E->destroy(S);
     printf(fails ? "FAILED (%d)\n" : "PASSED\n", fails);

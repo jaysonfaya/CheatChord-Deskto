@@ -42,7 +42,7 @@ endif ()
 # ---------------------------------------------------------------- the engine (C11, the same code as the MPC build)
 add_library (cc_engine STATIC
     engine/chordpilot.c engine/harmony.c engine/theory.c engine/voicing.c engine/synth.c
-    engine/seq_out.c engine/library.c engine/artists.c engine/refs.c engine/compat.c)
+    engine/seq_out.c engine/library.c engine/artists.c engine/refs.c engine/songrefs.c engine/compat.c)
 target_include_directories (cc_engine PUBLIC engine)
 if (MSVC)
     target_compile_options (cc_engine PRIVATE /W3 /wd4244 /wd4267 /wd4996 /wd4305 /utf-8)
@@ -90,6 +90,7 @@ juce_add_binary_data (CheatChordData SOURCES
 target_sources (CheatChord PRIVATE
     plugin/CCEngine.cpp
     plugin/MidiPort.cpp
+    plugin/Recorder.cpp
     plugin/PluginProcessor.cpp
     plugin/PluginEditor.cpp
     plugin/ui/Theme.cpp

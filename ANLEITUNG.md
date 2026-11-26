@@ -109,6 +109,37 @@ Farbe, im Tab und im Titel.
 - **Farben:** Velvet, Graphite oder Daylight (LAYOUT → Colour theme).
 - „Use this layout … for new instances“ merkt sich alles für neue Instanzen.
 
+## Songs: Akkord-Loops echter Songs (aus MIDI CONDUCTA)
+
+Panel **LIBRARY → SONGS**: 1467 Akkord-Loops aus echten Songs und benannten Progressionen, dieselben Daten wie in
+MIDI CONDUCTA 3.3 (McGill-Billboard-Charts 1958–1991, gemeinfreie Klassik, die Progressions-Bibliothek).
+- Suchen nach Künstler oder Titel, anklicken: unten stehen die Akkorde in deiner Tonart, mit Längen und Slash-Bässen.
+- **LOAD INTO PROGRESSION** schreibt den Loop in die Progression (Dur/Moll und Akkordlänge kommen mit). UNDO holt die
+  alte zurück.
+- **SONG REFS** (Regler): wie oft **GENERATE** einen echten Song-Loop nimmt, der zum Stil passt (Standard 50 %; 0 % =
+  nie). Die Info-Zeile sagt dann „NEW PROGRESSION LIKE KÜNSTLER - TITEL“.
+
+## Neue Progression während des Spielens (Morph)
+
+Panel **PLAY → NOW / NEXT BAR / END OF LOOP**: was passiert, wenn GENERATE, eine Formel oder ein Song eine neue
+Progression macht, während sie spielt.
+- **NOW:** sofort (ab dem nächsten Akkord).
+- **NEXT BAR** (Standard): die neue Progression wartet und beginnt mit ihrem ersten Akkord genau auf der nächsten 1.
+  Die Noten der alten enden genau dort.
+- **END OF LOOP:** sie beginnt, wenn der Loop wieder von vorne anfängt.
+Stoppst du, bevor sie dran ist, kommt sie sofort.
+
+## REC mit Einzählen
+
+Panel **PLAY**, unterste Reihe:
+- **REC:** nimmt auf, was CheatChord spielt (Pads, Keyboard, Progression), als MIDI-Take. Nochmals drücken = Stopp.
+- **COUNT-IN 1 BAR:** vorher ein Takt Klicks (4 Schläge, der erste höher). Läuft die DAW, beginnt der Take auf einem
+  Taktstrich; steht sie, zählt CheatChord im Tempo der DAW selbst.
+- **FREE / 4 / 8 / 16 BARS:** frei bis zum Stopp oder automatisch nach so vielen Takten.
+- **DRAG TAKE:** den letzten Take mit gedrückter Maustaste auf eine Spur ziehen. Rechtsklick: Ordner öffnen. Gespeichert
+  wird jeder Take unter Dokumente / JJ DA PLUG / CheatChord / MIDI Exports.
+- MIDI OUT muss an sein (Standard), sonst gibt es nichts aufzunehmen.
+
 ## Grooves: Bibliothek, Würfel, Follow
 
 Oben im Panel **GROOVE**:

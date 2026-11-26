@@ -126,6 +126,7 @@ static const char *const OPT_247[] = {"Artists", "Producers"};
 static const char *const OPT_286[] = {"Auto", "1/64T", "1/64", "1/32T", "1/32", "1/16T", "1/16", "1/8T", "1/8", "1/4T", "1/4", "1/2T", "1/2 Bar", "1 Bar", "2 Bars", "4 Bars", "8 Bars", "16 Bars"};
 static const char *const OPT_338[] = {"Up", "Down", "Alternate", "Guitar", "Random"};
 static const char *const OPT_339[] = {"Off", "On"};
+static const char *const OPT_340[] = {"Now", "Next Bar", "End Of Loop"};
 static const ParamMeta PARAMS[] = {
     {"level", "Synth Level", 0, 100, 75, 0, nullptr, 0},
     {"key", "Key", 0, 11, 0, 12, OPT_1, 0},
@@ -467,6 +468,8 @@ static const ParamMeta PARAMS[] = {
     {"save_slot_next", "Save Slot +", 0, 1, 0, 0, nullptr, 1},
     {"strum_mode", "Strum Direction", 0, 4, 0, 5, OPT_338, 0},
     {"slot_rev", "Reverse", 0, 1, 0, 2, OPT_339, 0},
+    {"morph", "New Progression", 0, 2, 1, 3, OPT_340, 0},
+    {"song_refs", "Song Refs", 0, 100, 50, 0, nullptr, 0},
 };
 static const int NUM_PARAMS = (int)(sizeof PARAMS / sizeof PARAMS[0]);
 inline const ParamMeta *findParam(const char *k) { for (int i = 0; i < NUM_PARAMS; i++) { const char *a = PARAMS[i].key, *b = k; while (*a && *a == *b) { a++; b++; } if (!*a && !*b) return &PARAMS[i]; } return nullptr; }

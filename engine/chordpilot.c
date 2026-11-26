@@ -17,6 +17,7 @@
 #include "library.h"
 #include "artists.h"
 #include "refs.h"
+#include "songrefs.h"
 #include "params_gen.h"
 #include "seq_out.h"
 #include "synth.h"
@@ -235,6 +236,13 @@ typedef struct inst {
     cc_midi_sink_t sink;
     void *sink_ctx;
     int64_t out_frame;            /* the frame of the event q_run is sending (0: now) */
+    /* NEW PROGRESSION (morph): a new progression while playing waits for the next bar or the loop's end, then starts
+     * there with its first chord */
+    int pend_active, pend_count, pend_genlen, pend_bars, pend_scale;
+    slot_t pend_slot[NSLOT];
+    char pend_label[48], pend_msg[160];
+    double morph_off;             /* beats the loop is shifted so the new progression's first chord sits on its start */
+    int ref_sel, ref_recent[8], ref_rn;   /* song references: the one shown in the browser; the last ones taken */
 } inst_t;
 
 static int clampi(int v, int lo, int hi) { return v < lo ? lo : v > hi ? hi : v; }
@@ -1067,32 +1075,132 @@ static void clear_all(inst_t *s) {
     say(s, 2500, "CLEARED (UNDO BRINGS IT BACK) - PICK A FIRST CHORD");
 }
 
-static void set_progression(inst_t *s, const chord_t *c, int n, const char *label) {
+/* a whole new progression: now, or (playing, NEW PROGRESSION = NEXT BAR / END OF LOOP) at that point. genlen, bars,
+ * scale: -1 = keep */
+static void apply_progression(inst_t *s, const slot_t *sl, int n, int genlen, int bars, int scale, const char *label,
+                              const char *msg) {
+    if (genlen >= 0) s->p[P_GEN_LEN] = genlen;
+    if (bars >= 0) s->p[P_BARS] = bars;
+    if (scale >= 0) s->p[P_SCALE] = scale;
     memset(s->slot, 0, sizeof s->slot);
-    for (int i = 0; i < n && i < NSLOT; i++) { s->slot[i].c = c[i]; s->slot[i].filled = 1; s->slot[i].len = 1; }
+    for (int i = 0; i < n && i < NSLOT; i++) { s->slot[i] = sl[i]; s->slot[i].filled = 1; }
     s->cursor = 0;
     recount(s);
     s->target = s->count < act_len(s) ? s->count : act_len(s) - 1;
     after_change(s, 1);
     hist_push(s, NULL, "%s", label);
+    if (msg && *msg) say(s, 4000, "%s", msg);
+}
+
+static void queue_progression(inst_t *s, const slot_t *sl, int n, int genlen, int bars, int scale, const char *label,
+                              const char *msg) {
+    if (s->playing && s->p[P_MORPH] > 0 && s->count > 0) {
+        memset(s->pend_slot, 0, sizeof s->pend_slot);
+        for (int i = 0; i < n && i < NSLOT; i++) s->pend_slot[i] = sl[i];
+        s->pend_count = n < NSLOT ? n : NSLOT;
+        s->pend_genlen = genlen; s->pend_bars = bars; s->pend_scale = scale;
+        snprintf(s->pend_label, sizeof s->pend_label, "%s", label);
+        snprintf(s->pend_msg, sizeof s->pend_msg, "%s", msg ? msg : "");
+        s->pend_active = 1;
+        say(s, 8000, "NEW PROGRESSION READY - IT STARTS %s", s->p[P_MORPH] == 1 ? "ON THE NEXT BAR" : "WHEN THE LOOP COMES ROUND");
+        return;
+    }
+    s->pend_active = 0;
+    apply_progression(s, sl, n, genlen, bars, scale, label, msg);
+}
+
+static void set_progression(inst_t *s, const chord_t *c, int n, const char *label) {
+    slot_t sl[NSLOT];
+    memset(sl, 0, sizeof sl);
+    for (int i = 0; i < n && i < NSLOT; i++) { sl[i].c = c[i]; sl[i].len = 1; }
+    queue_progression(s, sl, n, -1, -1, -1, label, NULL);
+}
+
+/* ---- song references */
+static void ref_slots(const inst_t *s, const songref_t *R, slot_t *sl) {
+    memset(sl, 0, sizeof(slot_t) * NSLOT);
+    for (int i = 0; i < R->n && i < NSLOT; i++) {
+        sl[i].c.root = (s->p[P_KEY] + R->c[i].deg) % 12;
+        sl[i].c.q = R->c[i].q;
+        sl[i].c.bass = R->c[i].bass >= 0 ? (s->p[P_KEY] + R->c[i].bass) % 12 : -1;
+        sl[i].len = R->c[i].len;
+    }
+}
+
+static void ref_label(const songref_t *R, char *b, int len) {
+    if (R->kind == 1 || !R->artist[0]) snprintf(b, len, "%s", R->title);
+    else snprintf(b, len, "%s - %s", R->artist, R->title);
+}
+
+static void load_ref(inst_t *s, int i, int generated) {
+    if (i < 0 || i >= NUM_SONGREFS) return;
+    const songref_t *R = &SONGREFS[i];
+    slot_t sl[NSLOT];
+    ref_slots(s, R, sl);
+    int scale = scale_is_minor(s->p[P_SCALE]) != R->minor ? (R->minor ? 1 : 0) : -1;
+    char who[80], lb[48], msg[160];
+    ref_label(R, who, sizeof who);
+    snprintf(lb, sizeof lb, "LIKE %s", who);
+    snprintf(msg, sizeof msg, "%s %s (UNDO BRINGS THE OLD ONE BACK)", generated ? "NEW PROGRESSION LIKE" : "LOADED", who);
+    s->ref_recent[s->ref_rn++ % 8] = i + 1;
+    queue_progression(s, sl, R->n, R->n > 4, R->bars, scale, lb, msg);
+}
+
+/* GENERATE with SONG REFS: a real song's loop that fits the style (and the scale, and SPICE's taste for rich chords) */
+static int pick_ref(inst_t *s) {
+    static double wt[4096];
+    int st = s->p[P_STYLE], minor = scale_is_minor(s->p[P_SCALE]), n = NUM_SONGREFS < 4096 ? NUM_SONGREFS : 4096;
+    double sum = 0;
+    for (int pass = 0; pass < 2 && sum <= 0; pass++) {
+        for (int i = 0; i < n; i++) {
+            const songref_t *R = &SONGREFS[i];
+            double w = 0;
+            if (pass == 1 || (R->styles >> st) & 1ULL) {
+                w = 1.0 + R->w;
+                if (R->minor == minor) w *= 3.0;
+                int sp = s->p[P_SPICE];
+                if (sp < 30 && R->rich > 60) w *= 0.3;
+                if (sp > 60 && R->rich < 20) w *= 0.3;
+                for (int k = 0; k < 8; k++) if (s->ref_recent[k] == i + 1) w = 0;
+                if (w > 0) {   /* never a progression the history already has (GENERATE writes something new) */
+                    slot_t sl[NSLOT];
+                    ref_slots(s, R, sl);
+                    for (int e = 0; e < s->hn && w > 0; e++) {
+                        if (s->hist[e].count != R->n) continue;
+                        int same = 1;
+                        for (int q = 0; q < R->n && same; q++)
+                            same = s->hist[e].slot[q].c.root == sl[q].c.root && s->hist[e].slot[q].c.q == sl[q].c.q;
+                        if (same) w = 0;
+                    }
+                }
+            }
+            wt[i] = w;
+            sum += w;
+        }
+    }
+    if (sum <= 0) return -1;
+    double r = (rng_next(&s->rng) % 1000000) / 1000000.0 * sum;
+    for (int i = 0; i < n; i++) { r -= wt[i]; if (r < 0) return i; }
+    return n - 1;
 }
 
 static void load_template(inst_t *s, int t) {
     t = clampi(t, 0, NUM_TEMPLATES - 1);
     const template_t *T = &TEMPLATES[t];
     /* keep the key; switch to a major or minor scale if the formula needs the other */
-    if (scale_is_minor(s->p[P_SCALE]) != T->minor) s->p[P_SCALE] = T->minor ? 1 : 0;
-    if (T->n > 4) s->p[P_GEN_LEN] = 1;
-    chord_t c[8];
-    for (int i = 0; i < T->n; i++) {
-        c[i].root = (s->p[P_KEY] + T->c[i].deg) % 12;
-        c[i].q = T->c[i].q;
-        c[i].bass = T->c[i].bass >= 0 ? (s->p[P_KEY] + T->c[i].bass) % 12 : -1;
+    int scale = scale_is_minor(s->p[P_SCALE]) != T->minor ? (T->minor ? 1 : 0) : -1;
+    slot_t sl[NSLOT];
+    memset(sl, 0, sizeof sl);
+    for (int i = 0; i < T->n && i < NSLOT; i++) {
+        sl[i].c.root = (s->p[P_KEY] + T->c[i].deg) % 12;
+        sl[i].c.q = T->c[i].q;
+        sl[i].c.bass = T->c[i].bass >= 0 ? (s->p[P_KEY] + T->c[i].bass) % 12 : -1;
+        sl[i].len = 1;
     }
-    char lb[40];
+    char lb[40], msg[96];
     snprintf(lb, sizeof lb, "TEMPLATE %s", T->name);
-    set_progression(s, c, T->n, lb);
-    say(s, 3000, "LOADED %s (UNDO BRINGS THE OLD ONE BACK)", T->name);
+    snprintf(msg, sizeof msg, "LOADED %s (UNDO BRINGS THE OLD ONE BACK)", T->name);
+    queue_progression(s, sl, T->n, T->n > 4 ? 1 : -1, -1, scale, lb, msg);
 }
 
 /* ------------------------------------------------------------------------------------------------ timeline */
@@ -1418,8 +1526,15 @@ static void rt_emit(void *vctx, double t, int ch, int note, int vel, double len,
 /* PLAY MODE: 0 OFF (pads and taps only), 1 MPC (follows MPC's transport), 2 LISTEN (our own PLAY/STOP loops the
  * progression at the project tempo; MPC's PLAY also drives it, in time with the sequence). In every mode MPC's STOP
  * ends playback, and nothing keeps running afterwards. */
+static void apply_progression(inst_t *s, const slot_t *sl, int n, int genlen, int bars, int scale, const char *label,
+                              const char *msg);
 static void stop_seq(inst_t *s) {
     if (s->playing) { all_notes_off(s, SRC_SEQ); s->playing = 0; }
+    s->morph_off = 0;
+    if (s->pend_active) {   /* stopped before the new progression's turn: it comes now */
+        s->pend_active = 0;
+        apply_progression(s, s->pend_slot, s->pend_count, s->pend_genlen, s->pend_bars, s->pend_scale, s->pend_label, s->pend_msg);
+    }
     s->listening = 0;
     s->play_slot = -1;
     s->display_rev++;
@@ -1469,16 +1584,50 @@ static void song_pos(void *inst, double ppq, double bpm, int playing, int frames
         q_run(s, &s->aq, s->now + frames, 1);
         return;
     }
-    if (host) s->anchor = s->p[P_LOOP_SYNC] == 1 && s->loop_src ? s->loop_start : 0;
+    double base = host ? (s->p[P_LOOP_SYNC] == 1 && s->loop_src ? s->loop_start : 0) : 0.0;   /* LISTEN: from 0 */
     double blk = frames * bpm / (60.0 * SR);
     double start;
-    if (!s->playing) { start = ppq - 0.001; s->playing = 1; s->display_rev++; }
-    else if (fabs(ppq - s->sent_to) > 1.0) start = ppq < s->sent_to ? ppq : ppq - 0.002;   /* loop wrap / locate */
+    if (!s->playing) { start = ppq - 0.001; s->playing = 1; s->morph_off = 0; s->display_rev++; }
+    else if (fabs(ppq - s->sent_to) > 1.0) { start = ppq < s->sent_to ? ppq : ppq - 0.002; s->morph_off = 0; }   /* loop wrap / locate */
     else start = s->sent_to;
+    s->anchor = base + s->morph_off;
     double end = ppq + blk;
     if (end > start) {
         rt_ctx_t c = {s, ppq, 60.0 * SR / bpm, s->now};
-        generate_span(s, start, end, rt_emit, &c);
+        double B = 1e300;
+        if (s->pend_active) {   /* NEW PROGRESSION: where it starts */
+            if (s->p[P_MORPH] == 2) {
+                double cyc = cycle_beats(s);
+                if (cyc > 0) B = s->anchor + cyc * ceil((start - s->anchor) / cyc - 1e-9);
+            } else B = s->anchor + 4.0 * ceil((start - s->anchor) / 4.0 - 1e-9);
+            if (B < start) B = start;
+        }
+        if (s->pend_active && B < end) {
+            generate_span(s, start, B, rt_emit, &c);
+            /* the old chords end on the line, the new progression starts there with its first chord */
+            int64_t at = s->now + (int64_t)((B - ppq) * c.spb);
+            if (at < s->now) at = s->now;
+            for (int n = 0; n < 128; n++)
+                if (s->seq_until[n] > at) {
+                    int chs[2] = {chord_ch(s), bass_ch(s)};
+                    for (int k = 0; k < (chs[0] == chs[1] ? 1 : 2); k++) {
+                        q_push(&s->aq, at, 0, chs[k], n, 0, s->gen[chs[k]][n], SRC_SEQ);
+                        q_push(&s->sq, at, 0, chs[k], n, 0, s->gen[chs[k]][n], SRC_SEQ);
+                    }
+                    s->seq_until[n] = at;
+                }
+            s->pend_active = 0;
+            apply_progression(s, s->pend_slot, s->pend_count, s->pend_genlen, s->pend_bars, s->pend_scale, s->pend_label,
+                              s->pend_msg[0] ? s->pend_msg : "NEW PROGRESSION");
+            double cyc = cycle_beats(s);
+            if (cyc > 0) {
+                s->morph_off = fmod(B - base, cyc);
+                if (s->morph_off < 0) s->morph_off += cyc;
+                s->anchor = base + s->morph_off;
+            }
+            generate_span(s, B, end, rt_emit, &c);
+        } else
+            generate_span(s, start, end, rt_emit, &c);
         s->sent_to = end;
     } else if (end > s->sent_to) s->sent_to = end;
     s->last_ppq = ppq;
@@ -2187,6 +2336,9 @@ static void set_param(void *inst, const char *key, const char *val) {
         }
         return;
     }
+    if (!strcmp(key, "ref_pick")) { s->ref_sel = clampi(atoi(val), 0, NUM_SONGREFS - 1); s->display_rev++; return; }
+    if (!strcmp(key, "ref_load")) { if (atoi(val)) load_ref(s, s->ref_sel, 0); return; }
+    if (!strcmp(key, "pend_cancel")) { if (atoi(val) && s->pend_active) { s->pend_active = 0; say(s, 2500, "NEW PROGRESSION CANCELLED"); } return; }
     if (!strcmp(key, "mains")) {   /* MPC runs this on STOP (and on insert): end LISTEN, nothing keeps playing */
         if (atoi(val) == 0 && (s->p[P_RUN] || s->listening)) { s->p[P_RUN] = 0; stop_seq(s); }
         return;
@@ -2279,6 +2431,10 @@ static void set_param(void *inst, const char *key, const char *val) {
             }
             break;
         case P_GENERATE: {
+            if ((int)(rng_next(&s->rng) % 100) < s->p[P_SONG_REFS]) {   /* a real song's loop */
+                int r = pick_ref(s);
+                if (r >= 0) { load_ref(s, r, 1); s->ref_sel = r; break; }
+            }
             job_t j;
             memset(&j, 0, sizeof j);
             job_settings(s, &j);
@@ -2489,6 +2645,23 @@ static int get_param(void *inst, const char *key, char *buf, int len) {
     inst_t *s = inst;
     int t, i;
     char nm[48], ro[24];
+    if (!strcmp(key, "ref_pick")) return snprintf(buf, len, "%d", s->ref_sel) + 1;
+    if (!strcmp(key, "pend")) return snprintf(buf, len, "%d", s->pend_active) + 1;
+    if (!strcmp(key, "ref_info")) {   /* the chosen reference: who, the numerals, the chords in this key */
+        const songref_t *R = &SONGREFS[clampi(s->ref_sel, 0, NUM_SONGREFS - 1)];
+        char who[80], ch[160];
+        slot_t sl[NSLOT];
+        ref_label(R, who, sizeof who);
+        ref_slots(s, R, sl);
+        int k = 0;
+        ch[0] = 0;
+        for (int i = 0; i < R->n && k < (int)sizeof ch - 1; i++) {
+            char nm[32];
+            chord_name_key(&sl[i].c, s->p[P_KEY], R->minor ? 1 : 0, nm, sizeof nm);
+            k += snprintf(ch + k, sizeof ch - k, "%s%s%s", i ? "  " : "", nm, sl[i].len == 2 ? " (2x)" : sl[i].len == 0 ? " (1/2)" : "");
+        }
+        return snprintf(buf, len, "%s~%s~%s", who, R->roman, ch) + 1;
+    }
     if (!strncmp(key, "preset:", 7)) {   /* MPC's PRESET menu asks for a program's name without loading it */
         preset_name(s, clampi(atoi(key + 7), 0, NPRESET - 1), nm, sizeof nm);
         return snprintf(buf, len, "%s", nm) + 1;
@@ -2984,8 +3157,12 @@ static void take_result(inst_t *s) {
             memcpy(g, r->gen, sizeof g);
             pthread_mutex_unlock(&s->m);
             s->busy_gen = 0;
-            set_progression(s, g, n, "GENERATE");
-            say(s, 3000, "NEW PROGRESSION (UNDO BRINGS THE OLD ONE BACK)");
+            {
+                slot_t sl[NSLOT];
+                memset(sl, 0, sizeof sl);
+                for (int q = 0; q < n && q < NSLOT; q++) { sl[q].c = g[q]; sl[q].len = 1; }
+                queue_progression(s, sl, n, -1, -1, -1, "GENERATE", "NEW PROGRESSION (UNDO BRINGS THE OLD ONE BACK)");
+            }
         } else {
             snprintf(s->export_msg, sizeof s->export_msg, "%s", r->msg);
             pthread_mutex_unlock(&s->m);
